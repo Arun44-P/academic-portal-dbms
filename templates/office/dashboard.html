@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Office Staff & Accounts Portal{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <h1 style="font-size: 1.5rem; font-weight: 700;">{{ staff.user.get_full_name|default:staff.user.username }}</h1>
+                <span class="role-badge role-staff">{{ staff.get_section_display }}</span>
+            </div>
+            <div style="color: var(--text-muted); font-size: 0.92rem;">
+                {{ staff.designation }} • Employee Code: <code>{{ staff.employee_code }}</code>
+            </div>
+        </div>
+        <div style="display: flex; gap: 16px;">
+            <div class="stat-card" style="padding: 12px 18px; margin-bottom: 0;">
+                <div class="label">Stipends Pending</div>
+                <div class="value" style="font-size: 1.4rem; color: var(--danger);">{{ stipend_queue|length }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STIPEND DISBURSEMENT QUEUE -->
+<div class="card" style="border: 2px solid var(--primary-light);">
+    <div class="card-header" style="background-color: #eff6ff;">
+        <div>
+            <h3 style="color: var(--primary);">💸 Research Office: Stipend Disbursement Queue</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
+                Stipends verified and academically approved by Supervising Professors (PIs) awaiting financial payout.
+            </p>
+        </div>
+        <span class="badge badge-info">{{ stipend_queue|length }} In Queue</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Junior Fellow</th>
+                    <th>Grant & Project</th>
+                    <th>PI Professor</th>
+                    <th>Cycle</th>
+                    <th>Amount</th>
+                    <th>PI Approval Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stp in stipend_queue %}
+                <tr>
+                    <td>
+                        <strong>{{ stp.junior.full_name }}</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ stp.junior.get_cadre_display }}</div>
+                    </td>
+                    <td>
+                        <code>{{ stp.junior.project.project_code }}</code>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ stp.junior.project.title|truncatechars:35 }}</div>
+                    </td>
+                    <td>Prof. {{ stp.junior.project.pi.user.last_name }}</td>
+                    <td>{{ stp.disbursement_month }}/{{ stp.disbursement_year }}</td>
+                    <td><strong style="color: #047857; font-size: 1rem;">₹{{ stp.amount }}</strong></td>
+                    <td><span class="badge badge-success">{{ stp.pi_approval_date }}</span></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.82rem;" 
+                                onclick="openDisburseModal('{{ stp.id }}', '{{ stp.junior.full_name }}', '{{ stp.amount }}')">
+                            💳 Disburse Payment
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                        🎉 All PI-approved stipends have been disbursed! No pending claims in queue.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- RECENTLY DISBURSED STIPENDS -->
+<div class="card">
+    <div class="card-header">
+        <h3>📜 Disbursed Stipend Transaction History</h3>
+        <span class="badge badge-info">Accounting Clearance Trail</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Junior Fellow</th>
+                    <th>Cycle</th>
+                    <th>Amount Paid</th>
+                    <th>Transaction Reference</th>
+                    <th>Disbursed At</th>
+                    <th>Processed By</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stp in processed_stipends %}
+                <tr>
+                    <td><strong>{{ stp.junior.full_name }}</strong></td>
+                    <td>{{ stp.disbursement_month }}/{{ stp.disbursement_year }}</td>
+                    <td>₹{{ stp.amount }}</td>
+                    <td><code>{{ stp.transaction_reference }}</code></td>
+                    <td style="font-size: 0.82rem; color: var(--text-muted);">{{ stp.disbursed_at|date:"Y-m-d H:i" }}</td>
+                    <td>{{ stp.processed_by.user.get_full_name|default:stp.processed_by.user.username }}</td>
+                    <td><span class="badge badge-success">DISBURSED</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No disbursed transactions recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal for Disbursing Payment -->
+<div id="disburseModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--radius); width: 100%; max-width: 480px; padding: 28px; box-shadow: var(--shadow-md);">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Record Stipend Disbursement</h3>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">
+            Release funds for <strong id="modalJuniorName"></strong> (Amount: <strong id="modalAmount"></strong>)
+        </p>
+
+        <form method="POST" id="modalDisburseForm" action="">
+            {% csrf_token %}
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Bank / Payment Gateway Reference Number</label>
+                <input type="text" name="transaction_reference" required placeholder="e.g. UTR-98218942-SBI or CHQ-09121"
+                       style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button type="button" class="btn btn-outline" onclick="closeDisburseModal()">Cancel</button>
+                <button type="submit" class="btn btn-success">Confirm & Disburse</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openDisburseModal(stipendId, juniorName, amount) {
+        document.getElementById('modalJuniorName').textContent = juniorName;
+        document.getElementById('modalAmount').textContent = "₹" + amount;
+        document.getElementById('modalDisburseForm').action = "/office-portal/stipend/disburse/" + stipendId + "/";
+        const modal = document.getElementById('disburseModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeDisburseModal() {
+        document.getElementById('disburseModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

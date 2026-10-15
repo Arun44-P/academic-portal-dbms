@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Local MySQL Instance Data & Logs
+mysql_data/
+*.sock
+*.pid
+*.log
+
+# Environment & Secrets
+.env
+.env.local
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

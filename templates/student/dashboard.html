@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Student Academic Portal{% endblock %}
+
+{% block content %}
+<!-- Student Profile Banner -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <h1 style="font-size: 1.5rem; font-weight: 700;">{{ student.user.get_full_name|default:student.user.username }}</h1>
+                <span class="role-badge role-student">{{ student.status }}</span>
+            </div>
+            <div style="color: var(--text-muted); font-size: 0.92rem;">
+                Roll No: <strong>{{ student.roll_number }}</strong> • Reg No: <code>{{ student.registration_number }}</code>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                Program: <strong>{{ student.program.name }}</strong> (Semester {{ student.current_semester }})
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 16px;">
+            <div class="stat-card" style="padding: 12px 18px; margin-bottom: 0;">
+                <div class="label">Registered Credits</div>
+                <div class="value" style="font-size: 1.4rem; color: var(--primary);">{{ total_credits }}</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 18px; margin-bottom: 0;">
+                <div class="label">Avg Attendance</div>
+                <div class="value" style="font-size: 1.4rem; color: var(--success);">88%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ENROLLED COURSES -->
+<div class="card">
+    <div class="card-header">
+        <h3>📖 Current Semester Enrolled Courses</h3>
+        <span class="badge badge-info">{{ enrollments|length }} Courses Enrolled</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th>Section</th>
+                    <th>Credits</th>
+                    <th>Instructor</th>
+                    <th>Attendance Status</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in enrollments %}
+                <tr>
+                    <td><strong>{{ e.offering.course.course_code }}</strong></td>
+                    <td>{{ e.offering.course.title }}</td>
+                    <td><span class="badge badge-warning">Sec {{ e.offering.section_name }}</span></td>
+                    <td>{{ e.offering.course.credits }}</td>
+                    <td>Prof. {{ e.offering.instructor.user.last_name }}</td>
+                    <td>
+                        <span class="badge badge-success">88% (Good)</span>
+                    </td>
+                    <td><span class="badge badge-success">{{ e.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No courses enrolled for this term.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- RESEARCH WING FELLOWSHIP DETAILS (IF ATTACHED AS JUNIOR) -->
+{% if research_roles %}
+<div class="card" style="border: 2px solid var(--info); background-color: #f0fdfa;">
+    <div class="card-header" style="background-color: #ccfbf1; border-bottom: 1px solid #99f6e4;">
+        <h3 style="color: #0f766e; display: flex; align-items: center; gap: 8px;">
+            🔬 Research Wing: Active Fellowship / Assistantship
+        </h3>
+        <span class="badge badge-info">Funded Research Junior</span>
+    </div>
+    <div class="card-body">
+        {% for role in research_roles %}
+        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: #134e4a;">{{ role.project.title }}</div>
+            <div style="font-size: 0.88rem; color: #0d9488; margin-top: 4px;">
+                Grant Code: <code>{{ role.project.project_code }}</code> • Supervising PI: <strong>Prof. {{ role.project.pi.user.last_name }}</strong>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.9rem;">
+                Cadre: <span class="badge badge-info">{{ role.get_cadre_display }}</span> • Monthly Stipend: <strong>₹{{ role.monthly_stipend }}</strong>/month
+            </div>
+        </div>
+        {% endfor %}
+
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin: 16px 0 10px;">My Monthly Stipend Claim History:</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cycle</th>
+                    <th>Stipend Amount</th>
+                    <th>PI Academic Approval</th>
+                    <th>Office Payout Status</th>
+                    <th>Transaction Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stp in stipends %}
+                <tr>
+                    <td>{{ stp.disbursement_month }}/{{ stp.disbursement_year }}</td>
+                    <td><strong>₹{{ stp.amount }}</strong></td>
+                    <td>
+                        {% if stp.pi_approved %}
+                            <span class="badge badge-success">✓ Approved ({{ stp.pi_approval_date }})</span>
+                        {% else %}
+                            <span class="badge badge-warning">⏳ Pending Professor Review</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if stp.payment_status == 'PROCESSED' %}badge-success{% elif stp.payment_status == 'APPROVED_BY_PI' %}badge-info{% else %}badge-warning{% endif %}">
+                            {{ stp.get_payment_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if stp.transaction_reference %}
+                            <code>{{ stp.transaction_reference }}</code>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">Processing</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No stipend claims recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

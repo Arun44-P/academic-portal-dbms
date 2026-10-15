@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 40px auto;">
+    <div class="card" style="box-shadow: var(--shadow-md);">
+        <div class="card-header" style="text-align: center; display: block; padding: 28px 24px 20px;">
+            <div style="font-size: 2.5rem; margin-bottom: 8px;">🏛️</div>
+            <h1 style="font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);">College Academic Portal</h1>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">Sign in with your role-assigned credentials</p>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Username / Roll No / Employee ID</label>
+                    <input type="text" name="username" id="usernameInput" required 
+                           style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem;" 
+                           placeholder="e.g. admin or dr_sharma">
+                </div>
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Password</label>
+                    <input type="password" name="password" id="passwordInput" required 
+                           style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem;" 
+                           placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem;">
+                    Sign In to Portal
+                </button>
+            </form>
+
+            <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.05em;">
+                    ⚡ Quick Login Demo Profiles (Click to fill)
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('admin', 'admin123')">🔑 Admin</button>
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('dr_sharma', 'pass123')">👨‍🏫 Permanent Prof (PI)</button>
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('prof_neha', 'pass123')">👩‍🏫 Assistant Prof</button>
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('prof_alok', 'pass123')">🌐 Visiting Prof</button>
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('staff_sunita', 'pass123')">💼 Office Staff</button>
+                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('student_arjun', 'pass123')">🎓 Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fillLogin(user, pass) {
+        document.getElementById('usernameInput').value = user;
+        document.getElementById('passwordInput').value = pass;
+    }
+</script>
+{% endblock %}

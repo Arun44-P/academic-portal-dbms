@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Overview{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.6rem; font-weight: 700;">Institute Administration Dashboard</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">System health, user metrics, and academic statistics</p>
+    </div>
+    <div>
+        <a href="{% url 'core_admin:database_console' %}" class="btn btn-danger">⚠️ DB Console & Danger Zone</a>
+    </div>
+</div>
+
+<div class="grid-4">
+    <div class="stat-card">
+        <div class="label">Total Active Users</div>
+        <div class="value">{{ metrics.total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Enrolled Students</div>
+        <div class="value">{{ metrics.active_students }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Total Faculty</div>
+        <div class="value">{{ metrics.total_instructors }}</div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+            {{ metrics.permanent_count }} Perm | {{ metrics.assistant_count }} Asst | {{ metrics.visiting_count }} Visiting
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Active Research Grants</div>
+        <div class="value">{{ metrics.active_projects }}</div>
+        <div style="font-size: 0.78rem; color: var(--success); font-weight: 600; margin-top: 4px;">
+            Total: ₹{{ metrics.total_grants|floatformat:2 }}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Recent Administrative & Database Operations</h3>
+        <span class="badge badge-info">Immutable Audit Trail</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Admin</th>
+                    <th>Action Type</th>
+                    <th>Target Entity</th>
+                    <th>Status</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td style="font-size: 0.82rem; color: var(--text-muted);">{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                    <td><strong>{{ log.admin.user.username }}</strong></td>
+                    <td><code>{{ log.action_type }}</code></td>
+                    <td><strong>{{ log.target_entity }}</strong></td>
+                    <td>
+                        <span class="badge {% if log.status == 'EXECUTED' %}badge-success{% elif log.status == 'REJECTED_BAD_CONFIRMATION' %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ log.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">{{ log.justification_reason }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                        No radical administrative actions logged yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
