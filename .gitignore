@@ -21,6 +21,7 @@ mysql_data/
 # Environment & Secrets
 .env
 .env.local
+*.exe
 
 # macOS
 .DS_Store
