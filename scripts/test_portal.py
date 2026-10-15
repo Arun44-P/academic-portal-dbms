@@ -17,7 +17,7 @@ User = get_user_model()
 client = Client()
 
 print("=" * 60)
-print("TESTING PORTAL AUTHENTICATION & ALL ROLE ROUTES")
+print("TESTING PORTAL AUTHENTICATION & ALL ROLE ROUTES (IIIT BHOPAL)")
 print("=" * 60)
 
 # 1. Test root & login
@@ -29,10 +29,10 @@ res = client.get('/accounts/login/')
 print(f"GET /accounts/login/ -> Status {res.status_code}")
 assert res.status_code == 200
 
-# 2. Test Student Arjun
-print("\n--- Testing Student Role (student_arjun) ---")
-logged_in = client.login(username='student_arjun', password='pass123')
-print(f"Login student_arjun: {logged_in}")
+# 2. Test Student Atharv Pathak
+print("\n--- Testing Student Role (atharv_pathak) ---")
+logged_in = client.login(username='atharv_pathak', password='pass123')
+print(f"Login atharv_pathak: {logged_in}")
 assert logged_in
 
 student_routes = [
@@ -40,6 +40,7 @@ student_routes = [
     '/student-portal/courses/',
     '/student-portal/catalog/',
     '/student-portal/attendance-grades/',
+    '/student-portal/fee-status/',
     '/student-portal/research-role/',
 ]
 for route in student_routes:
@@ -49,10 +50,10 @@ for route in student_routes:
 
 client.logout()
 
-# 3. Test Faculty Dr. Sharma
-print("\n--- Testing Faculty Role (dr_sharma) ---")
-logged_in = client.login(username='dr_sharma', password='pass123')
-print(f"Login dr_sharma: {logged_in}")
+# 3. Test Faculty Dr. Yatendra Sahu
+print("\n--- Testing Faculty Role (dr_sahu) ---")
+logged_in = client.login(username='dr_sahu', password='pass123')
+print(f"Login dr_sahu: {logged_in}")
 assert logged_in
 
 faculty_routes = [
@@ -91,7 +92,7 @@ client.logout()
 
 # 5. Test Admin
 print("\n--- Testing Admin Role (admin) ---")
-logged_in = client.login(username='admin', password='admin123')
+logged_in = client.login(username='admin', password='pass123')
 print(f"Login admin: {logged_in}")
 assert logged_in
 
@@ -109,5 +110,5 @@ for route in admin_routes:
 client.logout()
 
 print("\n" + "=" * 60)
-print("ALL 19 ROUTES PASSED WITH STATUS 200 OK!")
+print("ALL 20 ROUTES PASSED WITH STATUS 200 OK!")
 print("=" * 60)

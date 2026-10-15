@@ -1,13 +1,11 @@
 /**
  * Academic Portal - Core UI JavaScript (main.js)
- * Handles: Alerts dismiss, Sidebar toggling, Accessible Modals, Tabs, User Dropdown
+ * Robust, accessible UI helpers: Alerts, Modals, User Dropdown, Table Search
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initAlerts();
-  initSidebar();
   initModals();
-  initTabs();
   initUserDropdown();
   initTableSearch();
 });
@@ -40,50 +38,7 @@ function initAlerts() {
 }
 
 /* --------------------------------------------------------------------------
-   2. Responsive Sidebar & Mobile Drawer
-   -------------------------------------------------------------------------- */
-function initSidebar() {
-  const sidebar = document.querySelector('.app-sidebar');
-  const toggleBtn = document.getElementById('sidebarToggle');
-  const overlay = document.getElementById('sidebarOverlay');
-
-  if (!sidebar || !toggleBtn) return;
-
-  function openSidebar() {
-    sidebar.classList.add('sidebar-open');
-    if (overlay) overlay.classList.add('active');
-    toggleBtn.setAttribute('aria-expanded', 'true');
-  }
-
-  function closeSidebar() {
-    sidebar.classList.remove('sidebar-open');
-    if (overlay) overlay.classList.remove('active');
-    toggleBtn.setAttribute('aria-expanded', 'false');
-  }
-
-  toggleBtn.addEventListener('click', () => {
-    const isOpen = sidebar.classList.contains('sidebar-open');
-    if (isOpen) {
-      closeSidebar();
-    } else {
-      openSidebar();
-    }
-  });
-
-  if (overlay) {
-    overlay.addEventListener('click', closeSidebar);
-  }
-
-  // Close sidebar on escape if open on mobile
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
-      closeSidebar();
-    }
-  });
-}
-
-/* --------------------------------------------------------------------------
-   3. Accessible Modals
+   2. Accessible Modals
    -------------------------------------------------------------------------- */
 let activeModal = null;
 let lastActiveElement = null;
@@ -134,7 +89,7 @@ function initModals() {
   });
 }
 
-export function openModal(modal, triggerElement = null) {
+function openModal(modal, triggerElement = null) {
   if (!modal) return;
   lastActiveElement = triggerElement || document.activeElement;
   modal.classList.add('is-open');
@@ -149,7 +104,7 @@ export function openModal(modal, triggerElement = null) {
   }
 }
 
-export function closeModal(modal) {
+function closeModal(modal) {
   if (!modal) return;
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
@@ -182,39 +137,7 @@ function trapFocus(e, modal) {
 }
 
 /* --------------------------------------------------------------------------
-   4. Navigation Tabs
-   -------------------------------------------------------------------------- */
-function initTabs() {
-  const tabContainers = document.querySelectorAll('[data-tabs]');
-  tabContainers.forEach((container) => {
-    const tabs = container.querySelectorAll('[data-tab-target]');
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const targetSelector = tab.getAttribute('data-tab-target');
-        const targetPane = document.querySelector(targetSelector);
-
-        // Deactivate siblings
-        tabs.forEach((t) => {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        const parentSection = tab.closest('.tabs-wrapper') || document;
-        const allPanes = parentSection.querySelectorAll('.tab-pane');
-        allPanes.forEach((pane) => pane.classList.remove('active'));
-
-        // Activate selected
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
-        if (targetPane) {
-          targetPane.classList.add('active');
-        }
-      });
-    });
-  });
-}
-
-/* --------------------------------------------------------------------------
-   5. User Dropdown in Topbar
+   3. User Profile Dropdown in Topbar
    -------------------------------------------------------------------------- */
 function initUserDropdown() {
   const profileBtn = document.getElementById('userMenuBtn');
@@ -224,18 +147,30 @@ function initUserDropdown() {
 
   profileBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    const isExpanded = profileBtn.getAttribute('aria-expanded') === 'true';
+    profileBtn.setAttribute('aria-expanded', !isExpanded);
     dropdown.classList.toggle('is-active');
   });
 
+  // Close when clicking anywhere outside
   document.addEventListener('click', (e) => {
     if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
       dropdown.classList.remove('is-active');
+      profileBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown.classList.contains('is-active')) {
+      dropdown.classList.remove('is-active');
+      profileBtn.setAttribute('aria-expanded', 'false');
     }
   });
 }
 
 /* --------------------------------------------------------------------------
-   6. Simple Table Search / Filter Helper
+   4. Simple Table Search / Filter Helper
    -------------------------------------------------------------------------- */
 function initTableSearch() {
   const searchInputs = document.querySelectorAll('[data-table-filter]');
@@ -260,9 +195,8 @@ function initTableSearch() {
   });
 }
 
-// Attach globally for inline handlers if needed
+// Global portal helpers
 window.AcademicPortal = {
   openModal,
   closeModal
 };
-

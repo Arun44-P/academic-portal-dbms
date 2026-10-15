@@ -8,195 +8,141 @@
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Semester Course Offerings</h1>
-    <p class="text-sm text-muted">Browse active course offerings for Fall 2026, check prerequisites, and manage your registrations.</p>
+    <p class="text-sm text-muted">Browse active course offerings for IIIT Bhopal Autumn 2026-27, check professors, and manage your registrations.</p>
   </div>
   <div class="page-header-actions">
     <span class="badge badge-info" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
-      Enrolled Credits: <strong>18 / 24 Max</strong>
+      Academic Program: <strong>B.Tech CSE (IIIT Bhopal)</strong>
     </span>
   </div>
 </div>
 
-<div class="tabs-wrapper" data-tabs>
-  <!-- Navigation Tabs -->
-  <div class="nav-tabs">
-    <button type="button" class="tab-link active" data-tab-target="#tab-enrolled" aria-selected="true">
-      My Enrolled Courses (4)
-    </button>
-    <button type="button" class="tab-link" data-tab-target="#tab-available" aria-selected="false">
-      Available Offerings (Term Catalog)
-    </button>
+<!-- Section 1: Enrolled Courses -->
+<div class="card mb-4" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Currently Registered Sections (Autumn 2026-27)
+    </h2>
+    <span class="text-xs text-muted">Official Enrollment List</span>
   </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Credits</th>
+            <th>Section</th>
+            <th>Professor / Assistant Professor</th>
+            <th>Enrollment Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in student.enrollments.all %}
+          {% if e.status == 'ENROLLED' %}
+          <tr>
+            <td><span class="table-code font-bold">{{ e.offering.course.course_code }}</span></td>
+            <td>
+              <div class="font-bold">{{ e.offering.course.title }}</div>
+              <div class="text-xs text-muted">{{ e.offering.course.department.name }}</div>
+            </td>
+            <td><span class="badge badge-neutral">{{ e.offering.course.credits }}.0</span></td>
+            <td>Section {{ e.offering.section_name }}</td>
+            <td>
+              <strong>{{ e.offering.instructor.user.get_full_name }}</strong>
+              <div class="text-xs text-muted">{{ e.offering.instructor.get_faculty_category_display }}</div>
+            </td>
+            <td>{{ e.enrolled_at|date:"M d, Y" }}</td>
+            <td>
+              <form method="POST" action="{% url 'student:drop_course' e.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm text-danger" onclick="return confirm('Are you sure you want to drop {{ e.offering.course.course_code }}?')">
+                  Drop Course
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endif %}
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center p-4 text-muted">No courses currently enrolled.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-  <!-- TAB 1: Enrolled Courses -->
-  <div class="tab-pane active" id="tab-enrolled">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Currently Registered Sections (Fall 2026)
-        </h2>
-        <span class="text-xs text-muted">Drop deadline: 28th October 2026</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Course Name</th>
-                <th>Credits</th>
-                <th>Section</th>
-                <th>Instructor</th>
-                <th>Room &amp; Schedule</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for e in student.enrollments.all %}
-              {% if e.status == 'ENROLLED' %}
-              <tr>
-                <td><span class="table-code font-bold">{{ e.offering.course.course_code }}</span></td>
-                <td>
-                  <div class="font-bold">{{ e.offering.course.title }}</div>
-                  <div class="text-xs text-muted">{{ e.offering.course.department.name }}</div>
-                </td>
-                <td><span class="badge badge-neutral">{{ e.offering.course.credits }}.0</span></td>
-                <td>Section {{ e.offering.section_name }}</td>
-                <td>Prof. {{ e.offering.instructor.user.last_name }}</td>
-                <td>{{ e.enrolled_at|date:"M d, Y" }}</td>
-                <td>
-                  <form method="POST" action="{% url 'student:drop_course' e.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline btn-sm text-danger" onclick="return confirm('Are you sure you want to drop {{ e.offering.course.course_code }}?')">
-                      Drop Course
-                    </button>
-                  </form>
-                </td>
-              </tr>
+<!-- Section 2: Available Course Offerings -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        All Available Course Offerings (IIIT Bhopal Curriculum)
+      </h2>
+      <p class="text-xs text-muted" style="margin-top: 0.25rem;">Select open sections to register for the current semester.</p>
+    </div>
+    <div class="search-box">
+      <input type="text" class="form-control" placeholder="Search by course code or title..." data-table-filter="availableCoursesTable" style="max-width: 300px;">
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover" id="availableCoursesTable">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Credits</th>
+            <th>Professor / Assistant Professor</th>
+            <th>Seats / Capacity</th>
+            <th>Term</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for off in offerings %}
+          <tr>
+            <td><span class="table-code font-bold">{{ off.course.course_code }}</span></td>
+            <td>
+              <div class="font-bold">{{ off.course.title }}</div>
+              <div class="text-xs text-muted">{{ off.course.department.name }}</div>
+            </td>
+            <td><span class="badge badge-neutral">{{ off.course.credits }}.0</span></td>
+            <td>
+              <strong>{{ off.instructor.user.get_full_name }}</strong>
+              <div class="text-xs text-muted">Sec {{ off.section_name }} • {{ off.instructor.get_faculty_category_display }}</div>
+            </td>
+            <td>
+              <span class="text-xs font-semibold">{{ off.enrollments.count }} / {{ off.max_capacity }}</span>
+            </td>
+            <td><span class="badge badge-info">{{ off.semester }}</span></td>
+            <td>
+              {% if off.id in enrolled_ids %}
+                <span class="badge badge-success">✓ Enrolled</span>
+              {% elif off.enrollments.count >= off.max_capacity %}
+                <span class="badge badge-danger">Section Full</span>
+              {% else %}
+                <form method="POST" action="{% url 'student:enroll_course' off.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary btn-sm">Enroll Now</button>
+                </form>
               {% endif %}
-              {% empty %}
-              <tr>
-                <td colspan="7" class="text-center p-4 text-muted">No courses currently enrolled.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 2: Available Course Offerings -->
-  <div class="tab-pane" id="tab-available">
-    <div class="toolbar">
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="form-control" placeholder="Search course by code or title..." data-table-filter="availableCoursesTable" style="max-width: 340px;">
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-muted">Status: Active Offerings</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover" id="availableCoursesTable">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Course Name</th>
-                <th>Credits</th>
-                <th>Instructor &amp; Section</th>
-                <th>Capacity</th>
-                <th>Semester Term</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for off in offerings %}
-              <tr>
-                <td><span class="table-code font-bold">{{ off.course.course_code }}</span></td>
-                <td>
-                  <div class="font-bold">{{ off.course.title }}</div>
-                  <div class="text-xs text-muted">{{ off.course.department.name }}</div>
-                </td>
-                <td><span class="badge badge-neutral">{{ off.course.credits }}.0</span></td>
-                <td>Prof. {{ off.instructor.user.last_name }} (Sec {{ off.section_name }})</td>
-                <td>
-                  <span class="text-xs font-semibold">{{ off.enrollments.count }} / {{ off.max_capacity }}</span>
-                </td>
-                <td><span class="badge badge-info">{{ off.semester }}</span></td>
-                <td>
-                  {% if off.id in enrolled_ids %}
-                    <span class="badge badge-success">✓ Enrolled</span>
-                  {% elif off.enrollments.count >= off.max_capacity %}
-                    <span class="badge badge-danger">Section Full</span>
-                  {% else %}
-                    <form method="POST" action="{% url 'student:enroll_course' off.id %}">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-primary btn-sm">Enroll Now</button>
-                    </form>
-                  {% endif %}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="7" class="text-center p-4 text-muted">No course offerings available for this term.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center p-4 text-muted">No offerings found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 {% endblock %}
-
-{% block modals %}
-<!-- Drop Course Confirmation Modal -->
-<div class="modal" id="dropCourseModal" role="dialog" aria-modal="true" aria-labelledby="dropModalTitle" aria-hidden="true">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h3 class="modal-title text-danger" id="dropModalTitle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Confirm Course Drop
-      </h3>
-      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
-    </div>
-    <form method="POST" action="{% url 'student:courses' %}">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="drop">
-      <input type="hidden" name="course_code" id="dropModalCourseCode">
-      <div class="modal-body">
-        <p>Are you sure you want to drop this course offering from your active semester registration?</p>
-        <div style="background-color: var(--bg-surface-alt); padding: 1rem; border-radius: var(--radius-sm); margin: 1rem 0; border: 1px solid var(--border-light);">
-          <div class="font-bold text-main" id="dropModalCourseName">Database Management Systems</div>
-          <div class="text-xs text-muted" id="dropModalSection">Code: CS301 • Section A</div>
-        </div>
-        <p class="text-xs text-danger font-semibold">
-          Warning: Dropping below 16 credits may affect your full-time student status and scholarship eligibility.
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
-        <button type="submit" class="btn btn-danger">Confirm &amp; Drop Course</button>
-      </div>
-    </form>
-  </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  function prepareDropModal(code, name, section) {
-    document.getElementById('dropModalCourseCode').value = code;
-    document.getElementById('dropModalCourseName').textContent = name;
-    document.getElementById('dropModalSection').textContent = `Code: ${code} • ${section}`;
-  }
-</script>
-{% endblock %}
-

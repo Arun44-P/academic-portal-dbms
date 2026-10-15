@@ -36,6 +36,24 @@ def student_dashboard(request):
         'research_roles': research_roles,
         'stipends': stipends,
         'total_credits': total_credits,
+        'total_fee': 300000,
+        'paid_fee': 200000,
+        'due_fee': 100000,
+    })
+
+
+@login_required
+def student_fee_status(request):
+    if request.user.role != 'STUDENT':
+        messages.error(request, "Access restricted to Students.")
+        return redirect('accounts:role_dispatch')
+
+    student = get_object_or_404(StudentProfile, user=request.user)
+    return render(request, 'student/fee_status.html', {
+        'student': student,
+        'total_fee': 300000,
+        'paid_fee': 200000,
+        'due_fee': 100000,
     })
 
 

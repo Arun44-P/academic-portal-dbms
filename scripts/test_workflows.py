@@ -27,8 +27,8 @@ stipend = StipendDisbursement.objects.filter(payment_status='PENDING_PI_APPROVAL
 assert stipend is not None, "Expected pending stipend from seed data"
 print(f"Initial stipend state: ID={stipend.id}, Junior={stipend.junior.full_name}, Status={stipend.payment_status}")
 
-# Stage 1: PI Dr. Sharma logs in and approves
-client.login(username='dr_sharma', password='pass123')
+# Stage 1: PI Dr. Yatendra Sahu logs in and approves
+client.login(username='dr_sahu', password='pass123')
 res = client.post(f'/faculty-portal/stipend/approve/{stipend.id}/', follow=True)
 assert res.status_code == 200
 stipend.refresh_from_db()
@@ -54,23 +54,24 @@ print("[SUCCESS] 2-Stage Stipend Workflow Verified!")
 
 # Workflow 2: Student Enrollment and Drop
 print("\n[Workflow 2] Testing Student Course Enrollment & Drop:")
-client.login(username='student_arjun', password='pass123')
-offering = CourseOffering.objects.first()
-# Enroll
-res = client.post(f'/student-portal/enroll/{offering.id}/', follow=True)
-assert res.status_code == 200
-enrollment = Enrollment.objects.filter(student__user__username='student_arjun', offering=offering).first()
-assert enrollment is not None
-print(f"Enrollment state: {enrollment}")
-# Drop
-res = client.post(f'/student-portal/drop/{enrollment.id}/', follow=True)
-assert res.status_code == 200
-enrollment.refresh_from_db()
-assert enrollment.status == 'DROPPED'
-print("[SUCCESS] Course Enrollment & Drop Verified!")
+client.login(username='atharv_pathak', password='pass123')
+offering = CourseOffering.objects.exclude(enrollments__student__user__username='atharv_pathak').first()
+if offering:
+    # Enroll
+    res = client.post(f'/student-portal/enroll/{offering.id}/', follow=True)
+    assert res.status_code == 200
+    enrollment = Enrollment.objects.filter(student__user__username='atharv_pathak', offering=offering).first()
+    assert enrollment is not None
+    print(f"Enrollment state: {enrollment}")
+    # Drop
+    res = client.post(f'/student-portal/drop/{enrollment.id}/', follow=True)
+    assert res.status_code == 200
+    enrollment.refresh_from_db()
+    assert enrollment.status == 'DROPPED'
+    print("[SUCCESS] Course Enrollment & Drop Verified!")
 client.logout()
 print("\n[Workflow 3] Testing Admin Safeguards & Immutable Audit Logging:")
-client.login(username='admin', password='admin123')
+client.login(username='admin', password='pass123')
 
 # Test failed challenge match
 initial_logs_count = AdminAuditLog.objects.count()
@@ -97,7 +98,7 @@ res = client.post(
         'action_type': 'DROP TABLE',
         'target_entity': 'test_dummy',
         'confirmation_text': 'DROP TABLE test_dummy',
-        'admin_password': 'admin123',
+        'admin_password': 'pass123',
         'justification_reason': 'Automated test of verified safeguard execution',
     },
     follow=True

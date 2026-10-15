@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fee &amp; Dues Status | Student Portal{% endblock %}
+{% block breadcrumb %}Fee &amp; Dues Status{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Student Academic Fee Status &amp; Dues</h1>
+    <p class="text-sm text-muted">Official institutional fee account statement for B.Tech CSE (IIIT Bhopal) - Academic Year 2026-27.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      <span>Print Fee Slip</span>
+    </button>
+  </div>
+</div>
+
+<!-- 3 Fee Summary Stat Cards -->
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
+  <!-- Total Fee -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Total Annual Academic Fee</div>
+        <div class="stat-value">₹3,00,000</div>
+      </div>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="text-muted">Tuition + Hostel + Amenities</span>
+      <span class="text-muted">AY 2026-27</span>
+    </div>
+  </div>
+
+  <!-- Amount Paid -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Amount Paid</div>
+        <div class="stat-value text-success">₹2,00,000</div>
+      </div>
+      <div class="stat-icon stat-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">66.7% Cleared</span>
+      <span class="text-muted">Paid via SBI Collect</span>
+    </div>
+  </div>
+
+  <!-- Amount Due -->
+  <div class="stat-card" style="border-left: 3px solid #f59e0b;">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Outstanding Balance Due</div>
+        <div class="stat-value text-warning">₹1,00,000</div>
+      </div>
+      <div class="stat-icon stat-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge badge-warning">Due by 30th Nov 2026</span>
+      <span class="text-muted">Installment 2</span>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Fee Breakdown Table -->
+<div class="card mb-4" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Fee Head-Wise Breakdown (IIIT Bhopal Standard)
+    </h2>
+    <span class="text-xs text-muted">Roll No: {{ student.roll_number|default:"2024BCS001" }}</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Fee Head Component</th>
+            <th>Total Amount</th>
+            <th>Amount Paid</th>
+            <th>Outstanding Due</th>
+            <th>Payment Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="font-bold">Tuition &amp; Academic Instruction Fee</div>
+              <div class="text-xs text-muted">Core classroom instruction, lab maintenance &amp; software licenses</div>
+            </td>
+            <td><strong>₹2,00,000</strong></td>
+            <td><strong class="text-success">₹1,50,000</strong></td>
+            <td><strong class="text-warning">₹50,000</strong></td>
+            <td><span class="badge badge-warning">Partial Due</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Hostel Accommodation &amp; Mess Amenities</div>
+              <div class="text-xs text-muted">Campus residence, dining hall &amp; facility maintenance</div>
+            </td>
+            <td><strong>₹60,000</strong></td>
+            <td><strong class="text-success">₹30,000</strong></td>
+            <td><strong class="text-warning">₹30,000</strong></td>
+            <td><span class="badge badge-warning">Partial Due</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Examination, Library &amp; Student Welfare Fund</div>
+              <div class="text-xs text-muted">Semester examinations, digital library access &amp; sports</div>
+            </td>
+            <td><strong>₹40,000</strong></td>
+            <td><strong class="text-success">₹20,000</strong></td>
+            <td><strong class="text-warning">₹20,000</strong></td>
+            <td><span class="badge badge-warning">Partial Due</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background-color: var(--bg-surface-alt); font-weight: 700;">
+            <td>Total Consolidated Fee</td>
+            <td>₹3,00,000</td>
+            <td class="text-success">₹2,00,000</td>
+            <td class="text-warning">₹1,00,000</td>
+            <td><span class="badge badge-warning">Net Due: ₹1,00,000</span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Payment History / Transactions -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Recorded Payment Transactions
+    </h2>
+    <span class="text-xs text-muted">Bank Verified Records</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Date &amp; Time</th>
+            <th>Payment Gateway</th>
+            <th>Amount Paid</th>
+            <th>Status</th>
+            <th>Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="table-code font-bold">SBIC-2026-992147</span></td>
+            <td>18 July 2026, 11:42 AM</td>
+            <td>SBI Collect (NetBanking / UPI)</td>
+            <td><strong class="text-success">₹2,00,000.00</strong></td>
+            <td><span class="badge badge-success">✓ Verified &amp; Cleared</span></td>
+            <td>
+              <button type="button" class="btn btn-outline btn-sm" onclick="alert('Downloading official receipt SBIC-2026-992147...')">
+                Download PDF
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

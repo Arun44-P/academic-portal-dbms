@@ -115,11 +115,15 @@
     </div>
 
     <!-- Quick Role Pill Selector / Evaluator Fast-Fill Hints -->
-    <div class="role-hint-chips" title="Click to auto-populate test credentials">
-      <span class="role-chip" onclick="fillCredential('student_arjun', 'pass123')">🎓 Student (student_arjun)</span>
-      <span class="role-chip" onclick="fillCredential('dr_sharma', 'pass123')">👨‍🏫 Faculty (dr_sharma)</span>
-      <span class="role-chip" onclick="fillCredential('staff_sunita', 'pass123')">🏢 Staff (staff_sunita)</span>
-      <span class="role-chip" onclick="fillCredential('admin', 'admin123')">🛡️ Admin (admin)</span>
+    <div class="role-hint-chips" title="Click to auto-populate test credentials (pass123 for all)">
+      <span class="role-chip" onclick="fillCredential('atharv_pathak', 'pass123')">🎓 Atharv Pathak</span>
+      <span class="role-chip" onclick="fillCredential('arun_patidar', 'pass123')">🎓 Arun Patidar</span>
+      <span class="role-chip" onclick="fillCredential('prashast_mathur', 'pass123')">🎓 Prashast Mathur</span>
+      <span class="role-chip" onclick="fillCredential('dr_sahu', 'pass123')">👨‍🏫 Dr. Yatendra Sahu</span>
+      <span class="role-chip" onclick="fillCredential('dr_chaurasia', 'pass123')">👨‍🏫 Dr. Rahul Chaurasia</span>
+      <span class="role-chip" onclick="fillCredential('prof_neha', 'pass123')">👩‍🏫 Dr. Neha Kakkar</span>
+      <span class="role-chip" onclick="fillCredential('staff_sunita', 'pass123')">🏢 Staff Sunita</span>
+      <span class="role-chip" onclick="fillCredential('admin', 'pass123')">🛡️ Admin</span>
     </div>
 
     <!-- Django Flash Messages -->
@@ -147,7 +151,7 @@
       <!-- Password Input (Floating Label) -->
       <div class="form-floating">
         <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Password" required>
-        <label for="passwordInput">Secret Password</label>
+        <label for="passwordInput">Password</label>
       </div>
 
       <div class="flex items-center justify-between" style="margin-bottom: 1.25rem;">

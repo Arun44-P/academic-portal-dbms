@@ -32,26 +32,39 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Seeds database with realistic college academic and research wing data."
+    help = "Seeds database with IIIT Bhopal academic curriculum, requested professors, and student profiles."
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        self.stdout.write("Starting database seeding...")
+        self.stdout.write("Starting IIIT Bhopal database seeding...")
 
         # 1. Departments
         cse, _ = Department.objects.get_or_create(
             code="CSE",
-            defaults={"name": "Computer Science & Engineering", "established_year": 1995},
+            defaults={"name": "Computer Science & Engineering", "established_year": 2017},
+        )
+        it, _ = Department.objects.get_or_create(
+            code="IT",
+            defaults={"name": "Information Technology", "established_year": 2017},
         )
         ece, _ = Department.objects.get_or_create(
             code="ECE",
-            defaults={"name": "Electronics & Communication Engineering", "established_year": 1998},
+            defaults={"name": "Electronics & Communication Engineering", "established_year": 2017},
         )
 
         # 2. Programs
         btech_cse, _ = Program.objects.get_or_create(
             department=cse,
-            name="B.Tech Computer Science",
+            name="B.Tech Computer Science & Engineering",
+            defaults={
+                "degree_level": "UNDERGRADUATE",
+                "duration_years": 4,
+                "total_semesters": 8,
+            },
+        )
+        btech_it, _ = Program.objects.get_or_create(
+            department=it,
+            name="B.Tech Information Technology",
             defaults={
                 "degree_level": "UNDERGRADUATE",
                 "duration_years": 4,
@@ -59,19 +72,23 @@ class Command(BaseCommand):
             },
         )
 
-        # 3. Academic Semester
+        # 3. Academic Semester (Autumn Semester 2026-27)
+        # Deactivate any previous semesters
+        AcademicSemester.objects.update(is_current=False)
         current_sem, _ = AcademicSemester.objects.get_or_create(
-            term="FALL",
+            term="AUTUMN",
             academic_year="2026-2027",
             defaults={
-                "start_date": datetime.date(2026, 8, 1),
-                "end_date": datetime.date(2026, 12, 15),
+                "start_date": datetime.date(2026, 7, 20),
+                "end_date": datetime.date(2026, 12, 10),
                 "is_current": True,
             },
         )
+        current_sem.is_current = True
+        current_sem.save()
 
-        # 4. Courses
-        cs101, _ = Course.objects.get_or_create(
+        # 4. IIIT Bhopal Courses
+        c_dbms, _ = Course.objects.get_or_create(
             course_code="CS301",
             defaults={
                 "title": "Database Management Systems",
@@ -81,10 +98,70 @@ class Command(BaseCommand):
                 "department": cse,
             },
         )
-        cs102, _ = Course.objects.get_or_create(
+        c_os, _ = Course.objects.get_or_create(
             course_code="CS302",
             defaults={
-                "title": "Operating Systems & Concurrency",
+                "title": "Operating Systems",
+                "credits": 4,
+                "lecture_hours": 3,
+                "lab_hours": 2,
+                "department": cse,
+            },
+        )
+        c_cn, _ = Course.objects.get_or_create(
+            course_code="CS303",
+            defaults={
+                "title": "Computer Networks",
+                "credits": 4,
+                "lecture_hours": 3,
+                "lab_hours": 2,
+                "department": cse,
+            },
+        )
+        c_daa, _ = Course.objects.get_or_create(
+            course_code="CS304",
+            defaults={
+                "title": "Design and Analysis of Algorithms",
+                "credits": 4,
+                "lecture_hours": 3,
+                "lab_hours": 2,
+                "department": cse,
+            },
+        )
+        c_se, _ = Course.objects.get_or_create(
+            course_code="CS305",
+            defaults={
+                "title": "Software Engineering",
+                "credits": 3,
+                "lecture_hours": 3,
+                "lab_hours": 0,
+                "department": cse,
+            },
+        )
+        c_wt, _ = Course.objects.get_or_create(
+            course_code="IT301",
+            defaults={
+                "title": "Web Technologies & Cloud Computing",
+                "credits": 3,
+                "lecture_hours": 2,
+                "lab_hours": 2,
+                "department": it,
+            },
+        )
+        c_mp, _ = Course.objects.get_or_create(
+            course_code="EC301",
+            defaults={
+                "title": "Microprocessors & Embedded Systems",
+                "credits": 3,
+                "lecture_hours": 2,
+                "lab_hours": 2,
+                "department": ece,
+            },
+        )
+        c_ai, _ = Course.objects.get_or_create(
+            course_code="CS401",
+            defaults={
+                "title": "Machine Learning & Artificial Intelligence",
                 "credits": 4,
                 "lecture_hours": 3,
                 "lab_hours": 2,
@@ -92,11 +169,11 @@ class Command(BaseCommand):
             },
         )
 
-        # 5. Create Admin User
+        # 5. Admin User (Password: pass123)
         admin_user, _ = User.objects.get_or_create(
             username="admin",
             defaults={
-                "email": "admin@college.edu",
+                "email": "admin@iiitbhopal.ac.in",
                 "first_name": "System",
                 "last_name": "Admin",
                 "role": "ADMIN",
@@ -104,7 +181,7 @@ class Command(BaseCommand):
                 "is_superuser": True,
             },
         )
-        admin_user.set_password("admin123")
+        admin_user.set_password("pass123")
         admin_user.save()
 
         AdminProfile.objects.get_or_create(
@@ -112,181 +189,277 @@ class Command(BaseCommand):
             defaults={"employee_code": "ADM-001", "designation": "Head Systems Administrator"},
         )
 
-        # 6. Create Permanent Faculty (Senior Professor & PI)
-        prof_user, _ = User.objects.get_or_create(
-            username="dr_sharma",
+        # 6. Professors
+        # Professor 1: Dr. Yatendra Sahu (Permanent Professor, HOD & Tenured PI)
+        u_sahu, _ = User.objects.get_or_create(
+            username="dr_sahu",
             defaults={
-                "email": "sharma@college.edu",
-                "first_name": "Rajesh",
-                "last_name": "Sharma",
+                "email": "ysahu@iiitbhopal.ac.in",
+                "first_name": "Yatendra",
+                "last_name": "Sahu",
                 "role": "TEACHER",
             },
         )
-        prof_user.set_password("pass123")
-        prof_user.save()
+        u_sahu.first_name = "Yatendra"
+        u_sahu.last_name = "Sahu"
+        u_sahu.set_password("pass123")
+        u_sahu.save()
 
-        inst_sharma, _ = InstructorProfile.objects.get_or_create(
-            user=prof_user,
+        inst_sahu, _ = InstructorProfile.objects.get_or_create(
+            user=u_sahu,
             defaults={
                 "employee_code": "FAC-CSE-001",
                 "department": cse,
                 "faculty_category": "PERMANENT",
                 "designation": "Professor & Head of Department",
-                "highest_qualification": "Ph.D. in Computer Science (IIT Bombay)",
-                "hire_date": datetime.date(2010, 7, 15),
-                "office_room": "CSE-Block-302",
+                "highest_qualification": "Ph.D. in Computer Science",
+                "hire_date": datetime.date(2018, 7, 1),
+                "office_room": "Faculty-Wing-101",
             },
         )
         PermanentFaculty.objects.get_or_create(
-            instructor=inst_sharma,
+            instructor=inst_sahu,
             defaults={
                 "tenure_status": "TENURED",
-                "provident_fund_no": "PF-CSE-9921",
+                "provident_fund_no": "PF-IIITB-001",
                 "pension_eligible": True,
             },
         )
 
-        # 7. Create Assistant Professor (Tenure-Track, Mentored)
-        asst_user, _ = User.objects.get_or_create(
-            username="prof_neha",
+        # Professor 2: Dr. Rahul Chaurasia (Professor)
+        u_chaurasia, _ = User.objects.get_or_create(
+            username="dr_chaurasia",
             defaults={
-                "email": "neha@college.edu",
-                "first_name": "Neha",
-                "last_name": "Verma",
+                "email": "rchaurasia@iiitbhopal.ac.in",
+                "first_name": "Rahul",
+                "last_name": "Chaurasia",
                 "role": "TEACHER",
             },
         )
-        asst_user.set_password("pass123")
-        asst_user.save()
+        u_chaurasia.first_name = "Rahul"
+        u_chaurasia.last_name = "Chaurasia"
+        u_chaurasia.set_password("pass123")
+        u_chaurasia.save()
+
+        inst_chaurasia, _ = InstructorProfile.objects.get_or_create(
+            user=u_chaurasia,
+            defaults={
+                "employee_code": "FAC-CSE-002",
+                "department": cse,
+                "faculty_category": "PERMANENT",
+                "designation": "Professor",
+                "highest_qualification": "Ph.D. in Operating Systems & Architecture",
+                "hire_date": datetime.date(2019, 8, 1),
+                "office_room": "Faculty-Wing-102",
+            },
+        )
+        PermanentFaculty.objects.get_or_create(
+            instructor=inst_chaurasia,
+            defaults={
+                "tenure_status": "TENURED",
+                "provident_fund_no": "PF-IIITB-002",
+                "pension_eligible": True,
+            },
+        )
+
+        # Professor 3: Dr. Neha Kakkar (Assistant Professor)
+        u_neha, _ = User.objects.get_or_create(
+            username="prof_neha",
+            defaults={
+                "email": "nkakkar@iiitbhopal.ac.in",
+                "first_name": "Neha",
+                "last_name": "Kakkar",
+                "role": "TEACHER",
+            },
+        )
+        u_neha.first_name = "Neha"
+        u_neha.last_name = "Kakkar"
+        u_neha.set_password("pass123")
+        u_neha.save()
 
         inst_neha, _ = InstructorProfile.objects.get_or_create(
-            user=asst_user,
+            user=u_neha,
             defaults={
                 "employee_code": "FAC-CSE-015",
                 "department": cse,
                 "faculty_category": "ASSISTANT_PROFESSOR",
-                "designation": "Assistant Professor (Grade I)",
-                "highest_qualification": "Ph.D. in Distributed Systems",
-                "hire_date": datetime.date(2024, 8, 1),
-                "office_room": "CSE-Block-214",
+                "designation": "Assistant Professor",
+                "highest_qualification": "Ph.D. in Computer Networks & Distributed Systems",
+                "hire_date": datetime.date(2022, 1, 15),
+                "office_room": "Faculty-Wing-204",
             },
         )
         AssistantProfessor.objects.get_or_create(
             instructor=inst_neha,
             defaults={
-                "probation_end_date": datetime.date(2027, 8, 1),
-                "tenure_review_date": datetime.date(2027, 5, 15),
-                "mentor": inst_sharma,
+                "probation_end_date": datetime.date(2027, 1, 15),
+                "tenure_review_date": datetime.date(2026, 12, 1),
+                "mentor": inst_sahu,
                 "publication_quota": 4,
             },
         )
 
-        # 8. Create Visiting Professor
-        visiting_user, _ = User.objects.get_or_create(
-            username="prof_alok",
-            defaults={
-                "email": "alok@iitd.ac.in",
-                "first_name": "Alok",
-                "last_name": "Chatterjee",
-                "role": "TEACHER",
-            },
-        )
-        visiting_user.set_password("pass123")
-        visiting_user.save()
-
-        inst_alok, _ = InstructorProfile.objects.get_or_create(
-            user=visiting_user,
-            defaults={
-                "employee_code": "FAC-VIS-004",
-                "department": cse,
-                "faculty_category": "VISITING",
-                "designation": "Visiting Professor",
-                "highest_qualification": "D.Sc. in Database Engineering",
-                "hire_date": datetime.date(2026, 8, 1),
-                "office_room": "Guest-Faculty-Wing-1",
-            },
-        )
-        VisitingProfessor.objects.get_or_create(
-            instructor=inst_alok,
-            defaults={
-                "home_institution": "IIT Delhi (Dept of CSE)",
-                "contract_start_date": datetime.date(2026, 8, 1),
-                "contract_end_date": datetime.date(2026, 12, 31),
-                "honorarium_per_month": 75000.00,
-                "max_weekly_lecture_hours": 6,
-            },
-        )
-
-        # 9. Create Office Staff (Research Office & Accounts)
-        staff_user, _ = User.objects.get_or_create(
+        # 7. Office Staff
+        u_staff, _ = User.objects.get_or_create(
             username="staff_sunita",
             defaults={
-                "email": "sunita@college.edu",
+                "email": "sunita@iiitbhopal.ac.in",
                 "first_name": "Sunita",
                 "last_name": "Gupta",
                 "role": "OFFICE_STAFF",
             },
         )
-        staff_user.set_password("pass123")
-        staff_user.save()
+        u_staff.set_password("pass123")
+        u_staff.save()
 
-        staff_profile, _ = OfficeStaffProfile.objects.get_or_create(
-            user=staff_user,
+        OfficeStaffProfile.objects.get_or_create(
+            user=u_staff,
             defaults={
-                "employee_code": "STAFF-RES-03",
+                "employee_code": "STAFF-ADM-01",
                 "section": "RESEARCH_OFFICE",
-                "designation": "Research Project Accounts Superintendent",
+                "designation": "Accounts & Academic Administration Superintendent",
             },
         )
 
-        # 10. Create Students
-        student_user, _ = User.objects.get_or_create(
-            username="student_arjun",
+        # 8. Students
+        # Student 1: Atharv Pathak
+        u_atharv, _ = User.objects.get_or_create(
+            username="atharv_pathak",
             defaults={
-                "email": "arjun@college.edu",
-                "first_name": "Arjun",
-                "last_name": "Mehta",
+                "email": "atharv@iiitbhopal.ac.in",
+                "first_name": "Atharv",
+                "last_name": "Pathak",
                 "role": "STUDENT",
             },
         )
-        student_user.set_password("pass123")
-        student_user.save()
+        u_atharv.first_name = "Atharv"
+        u_atharv.last_name = "Pathak"
+        u_atharv.set_password("pass123")
+        u_atharv.save()
 
-        student_arjun, _ = StudentProfile.objects.get_or_create(
-            user=student_user,
+        s_atharv, _ = StudentProfile.objects.get_or_create(
+            user=u_atharv,
             defaults={
-                "roll_number": "2026CSE042",
-                "registration_number": "REG-2026-00942",
+                "roll_number": "2024BCS001",
+                "registration_number": "REG-IIITB-2024-001",
                 "program": btech_cse,
                 "current_semester": 5,
-                "admission_date": datetime.date(2024, 7, 20),
+                "admission_date": datetime.date(2024, 7, 15),
                 "status": "ACTIVE",
             },
         )
 
-        # 11. Course Offerings & Enrollments
-        offering_dbms, _ = CourseOffering.objects.get_or_create(
-            course=cs101,
-            semester=current_sem,
-            section_name="A",
-            defaults={"instructor": inst_sharma, "max_capacity": 60},
+        # Student 2: Arun Patidar
+        u_arun, _ = User.objects.get_or_create(
+            username="arun_patidar",
+            defaults={
+                "email": "arun@iiitbhopal.ac.in",
+                "first_name": "Arun",
+                "last_name": "Patidar",
+                "role": "STUDENT",
+            },
         )
-        offering_os, _ = CourseOffering.objects.get_or_create(
-            course=cs102,
-            semester=current_sem,
-            section_name="A",
-            defaults={"instructor": inst_neha, "max_capacity": 60},
+        u_arun.first_name = "Arun"
+        u_arun.last_name = "Patidar"
+        u_arun.set_password("pass123")
+        u_arun.save()
+
+        s_arun, _ = StudentProfile.objects.get_or_create(
+            user=u_arun,
+            defaults={
+                "roll_number": "2024BCS002",
+                "registration_number": "REG-IIITB-2024-002",
+                "program": btech_cse,
+                "current_semester": 5,
+                "admission_date": datetime.date(2024, 7, 15),
+                "status": "ACTIVE",
+            },
         )
 
-        Enrollment.objects.get_or_create(student=student_arjun, offering=offering_dbms)
-        Enrollment.objects.get_or_create(student=student_arjun, offering=offering_os)
+        # Student 3: Prashast Mathur
+        u_prashast, _ = User.objects.get_or_create(
+            username="prashast_mathur",
+            defaults={
+                "email": "prashast@iiitbhopal.ac.in",
+                "first_name": "Prashast",
+                "last_name": "Mathur",
+                "role": "STUDENT",
+            },
+        )
+        u_prashast.first_name = "Prashast"
+        u_prashast.last_name = "Mathur"
+        u_prashast.set_password("pass123")
+        u_prashast.save()
 
-        # 12. Research Wing (Project, Co-PI, Juniors, Stipends)
+        s_prashast, _ = StudentProfile.objects.get_or_create(
+            user=u_prashast,
+            defaults={
+                "roll_number": "2024BCS003",
+                "registration_number": "REG-IIITB-2024-003",
+                "program": btech_cse,
+                "current_semester": 5,
+                "admission_date": datetime.date(2024, 7, 15),
+                "status": "ACTIVE",
+            },
+        )
+
+        # 9. Course Offerings
+        off_dbms, _ = CourseOffering.objects.get_or_create(
+            course=c_dbms,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_sahu, "max_capacity": 65},
+        )
+        off_os, _ = CourseOffering.objects.get_or_create(
+            course=c_os,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_chaurasia, "max_capacity": 65},
+        )
+        off_cn, _ = CourseOffering.objects.get_or_create(
+            course=c_cn,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_neha, "max_capacity": 65},
+        )
+        off_daa, _ = CourseOffering.objects.get_or_create(
+            course=c_daa,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_sahu, "max_capacity": 65},
+        )
+        off_se, _ = CourseOffering.objects.get_or_create(
+            course=c_se,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_chaurasia, "max_capacity": 65},
+        )
+        off_wt, _ = CourseOffering.objects.get_or_create(
+            course=c_wt,
+            semester=current_sem,
+            section_name="A",
+            defaults={"instructor": inst_neha, "max_capacity": 65},
+        )
+
+        # 10. Enrollments
+        # Atharv enrolled in CS301, CS302, CS303, CS304
+        for off in [off_dbms, off_os, off_cn, off_daa]:
+            Enrollment.objects.get_or_create(student=s_atharv, offering=off, defaults={"status": "ENROLLED"})
+
+        # Arun enrolled in CS301, CS302, CS303, CS305
+        for off in [off_dbms, off_os, off_cn, off_se]:
+            Enrollment.objects.get_or_create(student=s_arun, offering=off, defaults={"status": "ENROLLED"})
+
+        # Prashast enrolled in CS301, CS303, CS304, IT301
+        for off in [off_dbms, off_cn, off_daa, off_wt]:
+            Enrollment.objects.get_or_create(student=s_prashast, offering=off, defaults={"status": "ENROLLED"})
+
+        # 11. Research Wing (DST Grant under Dr. Yatendra Sahu)
         project_dst, _ = ResearchProject.objects.get_or_create(
-            project_code="DST-SERB-2026-AI",
+            project_code="DST-SERB-2026-IIITB",
             defaults={
                 "title": "Scalable Relational Query Optimization for Cloud-Native Distributed DBMS",
-                "pi": inst_sharma,
+                "pi": inst_sahu,
                 "funding_agency": "DST-SERB (Govt. of India)",
                 "total_grant_amount": 4500000.00,  # 45 Lakhs
                 "allocated_stipend_budget": 1200000.00,  # 12 Lakhs
@@ -295,6 +468,8 @@ class Command(BaseCommand):
                 "status": "ACTIVE",
             },
         )
+        project_dst.pi = inst_sahu
+        project_dst.save()
 
         ProjectCoInvestigator.objects.get_or_create(
             project=project_dst,
@@ -302,13 +477,13 @@ class Command(BaseCommand):
             defaults={"role_description": "Co-Principal Investigator (Concurrency Analysis)"},
         )
 
-        # Research Juniors under Dr. Sharma
-        junior_arjun, _ = ResearchJunior.objects.get_or_create(
+        # Research Juniors (Atharv Pathak & Arun Patidar attached to DST Grant)
+        junior_atharv, _ = ResearchJunior.objects.get_or_create(
             project=project_dst,
-            full_name="Arjun Mehta",
+            full_name="Atharv Pathak",
             defaults={
-                "student": student_arjun,
-                "email": "arjun@college.edu",
+                "student": s_atharv,
+                "email": "atharv@iiitbhopal.ac.in",
                 "phone": "+91 9876543210",
                 "cadre": "STUDENT_INTERN",
                 "monthly_stipend": 12000.00,
@@ -317,53 +492,56 @@ class Command(BaseCommand):
                 "status": "ACTIVE",
             },
         )
+        junior_atharv.student = s_atharv
+        junior_atharv.save()
 
-        junior_priya, _ = ResearchJunior.objects.get_or_create(
+        junior_arun, _ = ResearchJunior.objects.get_or_create(
             project=project_dst,
-            full_name="Priya Nair",
+            full_name="Arun Patidar",
             defaults={
-                "email": "priya.jrf@college.edu",
+                "student": s_arun,
+                "email": "arun@iiitbhopal.ac.in",
                 "phone": "+91 9811223344",
-                "cadre": "JRF",
-                "monthly_stipend": 37000.00,
-                "appointment_start_date": datetime.date(2026, 2, 1),
-                "appointment_end_date": datetime.date(2028, 1, 31),
+                "cadre": "STUDENT_INTERN",
+                "monthly_stipend": 12000.00,
+                "appointment_start_date": datetime.date(2026, 8, 1),
+                "appointment_end_date": datetime.date(2026, 12, 31),
                 "status": "ACTIVE",
             },
         )
+        junior_arun.student = s_arun
+        junior_arun.save()
 
         # Monthly Stipends
-        # Stipend 1: Approved by PI Dr. Sharma -> Waiting for Office Clearance
-        StipendDisbursement.objects.get_or_create(
-            junior=junior_priya,
+        # Stipend 1 for Atharv: PENDING_PI_APPROVAL (Dr. Sahu can approve it in 1-click)
+        StipendDisbursement.objects.filter(junior=junior_atharv, disbursement_month=9, disbursement_year=2026).delete()
+        StipendDisbursement.objects.create(
+            junior=junior_atharv,
             disbursement_month=9,
             disbursement_year=2026,
-            defaults={
-                "amount": 37000.00,
-                "pi_approved": True,
-                "pi_approval_date": datetime.date(2026, 10, 2),
-                "office_processed": False,
-                "payment_status": "APPROVED_BY_PI",
-            },
+            amount=12000.00,
+            pi_approved=False,
+            office_processed=False,
+            payment_status="PENDING_PI_APPROVAL",
         )
 
-        # Stipend 2: Pending PI approval
-        StipendDisbursement.objects.get_or_create(
-            junior=junior_arjun,
+        # Stipend 2 for Arun: APPROVED_BY_PI (Waiting for Office Staff Sunita to disburse funds)
+        StipendDisbursement.objects.filter(junior=junior_arun, disbursement_month=9, disbursement_year=2026).delete()
+        StipendDisbursement.objects.create(
+            junior=junior_arun,
             disbursement_month=9,
             disbursement_year=2026,
-            defaults={
-                "amount": 12000.00,
-                "pi_approved": False,
-                "office_processed": False,
-                "payment_status": "PENDING_PI_APPROVAL",
-            },
+            amount=12000.00,
+            pi_approved=True,
+            pi_approval_date=datetime.date(2026, 10, 5),
+            office_processed=False,
+            payment_status="APPROVED_BY_PI",
         )
 
-        # Publications
+        # 12. Publications
         ResearchPublication.objects.get_or_create(
-            instructor=inst_sharma,
-            title="Adaptive Index Tuning in Partitioned Distributed Relational Databases",
+            instructor=inst_sahu,
+            title="Adaptive Query Optimization & Normalization Models for IIIT Distributed Cloud Systems",
             defaults={
                 "project": project_dst,
                 "venue_name": "IEEE Transactions on Knowledge and Data Engineering (TKDE)",
@@ -374,19 +552,23 @@ class Command(BaseCommand):
             },
         )
 
-        self.stdout.write(self.style.SUCCESS("Database seeding completed successfully!"))
+        self.stdout.write(self.style.SUCCESS("Database seeding completed successfully for IIIT Bhopal!"))
         self.stdout.write(
             """
-Demo Accounts Created:
----------------------------------------------------------------
-Role               Username        Password
----------------------------------------------------------------
-Admin              admin           admin123
-Permanent Prof     dr_sharma       pass123
-Assistant Prof     prof_neha       pass123
-Visiting Prof      prof_alok       pass123
-Office Staff       staff_sunita    pass123
-Student            student_arjun   pass123
----------------------------------------------------------------
+Demo Accounts (Password for ALL is 'pass123'):
+---------------------------------------------------------------------------------
+Role               Full Name           Username          Password
+---------------------------------------------------------------------------------
+Admin              System Admin        admin             pass123
+Permanent Prof     Dr. Yatendra Sahu   dr_sahu           pass123
+Permanent Prof     Dr. Rahul Chaurasia dr_chaurasia      pass123
+Assistant Prof     Dr. Neha Kakkar     prof_neha         pass123
+Office Staff       Sunita Gupta        staff_sunita      pass123
+Student            Atharv Pathak       atharv_pathak     pass123
+Student            Arun Patidar        arun_patidar      pass123
+Student            Prashast Mathur     prashast_mathur   pass123
+---------------------------------------------------------------------------------
+Fee Details: Total: Rs. 3,00,000 | Paid: Rs. 2,00,000 | Due: Rs. 1,00,000
+Course Structure: IIIT Bhopal (CS301, CS302, CS303, CS304, CS305, IT301, EC301, CS401)
 """
         )

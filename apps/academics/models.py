@@ -44,9 +44,13 @@ class Course(models.Model):
 
 class AcademicSemester(models.Model):
     TERM_CHOICES = (
-        ('FALL', 'Fall'),
-        ('SPRING', 'Spring'),
-        ('SUMMER', 'Summer'),
+        ('AUTUMN', 'Autumn Semester'),
+        ('WINTER', 'Winter Semester'),
+        ('SUMMER', 'Summer Semester'),
+        ('ODD', 'Odd Semester'),
+        ('EVEN', 'Even Semester'),
+        ('FALL', 'Autumn Semester'),
+        ('SPRING', 'Winter Semester'),
     )
     term = models.CharField(max_length=10, choices=TERM_CHOICES)
     academic_year = models.CharField(max_length=9)  # e.g. '2026-2027'

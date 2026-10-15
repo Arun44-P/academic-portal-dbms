@@ -1,30 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Attendance &amp; Grade Report{% endblock %}
-{% block breadcrumb %}Attendance &amp; Grade Cards{% endblock %}
+{% block title %}Attendance &amp; Academic Grades{% endblock %}
+{% block breadcrumb %}Attendance &amp; Assessment{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-header-title">Academic Evaluation &amp; Attendance Report</h1>
-    <p class="text-sm text-muted">Real-time attendance logs, assessment breakdown, and detention threshold alerts.</p>
+    <h1 class="page-header-title">Academic Attendance &amp; Performance</h1>
+    <p class="text-sm text-muted">Official semester records for IIIT Bhopal curriculum, continuous evaluations, and attendance detention risk compliance.</p>
   </div>
   <div class="page-header-actions">
-    <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Print Grade Card
-    </button>
-  </div>
-</div>
-
-<!-- Attendance Policy Warning Notice -->
-<div class="alert alert-warning" style="margin-bottom: 1.75rem;">
-  <span class="alert-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-  </span>
-  <div class="alert-content">
-    <strong>University Attendance Regulation:</strong> Students maintaining below <strong>75%</strong> cumulative attendance in any course section are flagged as <em>Caution</em>. Students with below <strong>65%</strong> are subject to <strong>Mandatory Exam Detention</strong> under Academic Code Sec 4.2.
+    <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+      Cumulative Average: <strong>80.2%</strong>
+    </span>
   </div>
 </div>
 
@@ -33,16 +22,16 @@
   <div class="card-header">
     <h2 class="card-title">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      Course Attendance Records &amp; Detention Risk
+      Course Attendance Records &amp; Detention Risk Monitoring
     </h2>
-    <span class="badge badge-info">Term: Fall 2026</span>
+    <span class="badge badge-info">Autumn Semester 2026-27</span>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Course</th>
+            <th>Course &amp; Faculty Designation</th>
             <th>Attended / Total</th>
             <th>Percentage</th>
             <th style="min-width: 220px;">Progress Bar</th>
@@ -54,7 +43,7 @@
           <tr>
             <td>
               <div class="font-bold">CS301: Database Management Systems</div>
-              <div class="text-xs text-muted">Instructor: Dr. K. Raman</div>
+              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Yatendra Sahu (HOD &amp; Tenured Professor)</div>
             </td>
             <td><strong>32</strong> / 36 Lectures</td>
             <td><strong class="text-success" style="font-size: 1.1rem;">88.9%</strong></td>
@@ -74,8 +63,8 @@
           <!-- Case 2: Caution 65% - 74% (Amber) -->
           <tr>
             <td>
-              <div class="font-bold">CS304: Operating Systems Design</div>
-              <div class="text-xs text-muted">Instructor: Dr. Sunita V.</div>
+              <div class="font-bold">CS302: Operating Systems</div>
+              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Rahul Chaurasia (Professor)</div>
             </td>
             <td><strong>23</strong> / 32 Lectures</td>
             <td><strong class="text-warning" style="font-size: 1.1rem;">71.9%</strong></td>
@@ -95,8 +84,10 @@
           <!-- Case 3: Detention Risk < 65% (Red) -->
           <tr style="background-color: #fffbfb;">
             <td>
-              <div class="font-bold text-danger">CS308: Computer Networks &amp; Protocols</div>
-              <div class="text-xs text-muted">Instructor: Prof. Alok Gupta</div>
+              <div class="font-bold text-danger">CS303: Computer Networks</div>
+              <div class="text-xs text-danger font-semibold">
+                <strong>Assistant Professor:</strong> Dr. Neha Kakkar (Detention Risk Warning Issued)
+              </div>
             </td>
             <td><strong>18</strong> / 30 Lectures</td>
             <td><strong class="text-danger" style="font-size: 1.1rem;">60.0%</strong></td>
@@ -116,8 +107,8 @@
           <!-- Case 4: Safe >= 75% (Green) -->
           <tr>
             <td>
-              <div class="font-bold">CS311: Relational DBMS Laboratory</div>
-              <div class="text-xs text-muted">Instructor: Prof. M. Verma</div>
+              <div class="font-bold">CS304: Design and Analysis of Algorithms</div>
+              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Yatendra Sahu (Professor)</div>
             </td>
             <td><strong>12</strong> / 12 Sessions</td>
             <td><strong class="text-success" style="font-size: 1.1rem;">100.0%</strong></td>
@@ -144,7 +135,7 @@
   <div class="card-header">
     <h2 class="card-title">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Component-Wise Assessment Breakdown
+      Component-Wise Assessment Breakdown (IIIT Bhopal Standard)
     </h2>
     <span class="text-xs text-muted">Official Grade Card</span>
   </div>
@@ -153,7 +144,7 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Course</th>
+            <th>Course &amp; Professor</th>
             <th>Quiz 1 (10)</th>
             <th>Quiz 2 (10)</th>
             <th>Mid-Term (30)</th>
@@ -164,7 +155,10 @@
         </thead>
         <tbody>
           <tr>
-            <td><strong class="table-code">CS301</strong>: DBMS</td>
+            <td>
+              <strong class="table-code">CS301</strong>: DBMS
+              <div class="text-xs text-muted">Professor: Dr. Yatendra Sahu</div>
+            </td>
             <td>9.5</td>
             <td>8.5</td>
             <td>27.5</td>
@@ -173,7 +167,10 @@
             <td><span class="badge badge-success">A (Excellent)</span></td>
           </tr>
           <tr>
-            <td><strong class="table-code">CS304</strong>: Operating Systems</td>
+            <td>
+              <strong class="table-code">CS302</strong>: Operating Systems
+              <div class="text-xs text-muted">Professor: Dr. Rahul Chaurasia</div>
+            </td>
             <td>8.0</td>
             <td>7.0</td>
             <td>23.0</td>
@@ -182,7 +179,10 @@
             <td><span class="badge badge-info">B+ (Good)</span></td>
           </tr>
           <tr>
-            <td><strong class="table-code">CS308</strong>: Networks</td>
+            <td>
+              <strong class="table-code">CS303</strong>: Computer Networks
+              <div class="text-xs text-muted">Assistant Professor: Dr. Neha Kakkar</div>
+            </td>
             <td>6.5</td>
             <td>7.0</td>
             <td>19.5</td>
@@ -191,7 +191,10 @@
             <td><span class="badge badge-warning">In Progress</span></td>
           </tr>
           <tr>
-            <td><strong class="table-code">CS311</strong>: DBMS Lab</td>
+            <td>
+              <strong class="table-code">CS304</strong>: Algorithms (DAA)
+              <div class="text-xs text-muted">Professor: Dr. Yatendra Sahu</div>
+            </td>
             <td>10.0</td>
             <td>9.5</td>
             <td>28.5</td>
@@ -206,9 +209,8 @@
   <div class="card-footer">
     <div class="flex items-center justify-between w-full">
       <span class="font-bold text-main">Calculated SGPA: <strong>8.85 / 10.0</strong></span>
-      <span class="text-xs text-muted">Grading Scale: 10-point Relative Grading System</span>
+      <span class="text-xs text-muted">Grading Scale: 10-point Relative Grading System (IIIT Bhopal)</span>
     </div>
   </div>
 </div>
 {% endblock %}
-
