@@ -66,9 +66,23 @@ The `seed_db` command creates realistic accounts for testing:
 
 ---
 
+## 🌐 Cloud Deployment (Render / Railway)
+
+This repository includes production configs (`Procfile`, `render.yaml`, `runtime.txt`, `whitenoise` static serving):
+
+### 1-Click / Git Deployment on Render:
+1. Connect this GitHub repository on [Render](https://render.com/).
+2. Select **Web Service** or use the included `render.yaml` Blueprint.
+3. Build Command: `pip install -r requirements.txt && python manage.py migrate && python manage.py seed_db && python manage.py collectstatic --no-input`
+4. Start Command: `gunicorn academic_portal.wsgi:application`
+5. The portal will launch online with seeded accounts and static assets handled via WhiteNoise!
+
+---
+
 ## 📁 Key Files & Documentation
 
 - `task.md` — Frontend development roadmap, page specs, and teammate briefing prompt.
-- `Architectural_Decisions_and_Why_We_Have_Taken_Them.md` — Detailed documentation of normalization (1NF $\to$ BCNF) and architectural decisions.
+- `Architectural_Decisions_and_Why_We_Have_Taken_Them.md` — Detailed documentation of normalization (1NF → BCNF) and architectural decisions.
 - `schema.sql` — MySQL DDL script with all table definitions, constraints, foreign keys, and views.
-- `scripts/` — Helper scripts to start, stop, and access MySQL.
+- `scripts/` — Helper scripts to start, stop, seed, and run test verification suites.
+- `Procfile` & `render.yaml` — Production cloud deployment definitions.

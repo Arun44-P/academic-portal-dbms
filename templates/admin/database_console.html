@@ -1,147 +1,236 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Database Console & Danger Zone{% endblock %}
+{% block title %}Database Console &amp; Danger Zone{% endblock %}
+{% block breadcrumb %}Administrator / Database Maintenance Console{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/danger_zone.css' %}">
+{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px;">
-    <h1 style="font-size: 1.6rem; font-weight: 700;">Database Console & Maintenance</h1>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Inspect live tables, row counts, and execute privileged administrative operations.</p>
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">MySQL Database Maintenance &amp; Schema Inspector</h1>
+    <p class="text-sm text-muted">Direct storage engine telemetry, InnoDB buffer pool metrics, table optimization, and radical administrative maintenance.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'core_admin:audit_logs' %}" class="btn btn-outline btn-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      View Audit Trail
+    </a>
+  </div>
 </div>
 
-<!-- DANGER ZONE CARD -->
-<div class="danger-box" style="margin-bottom: 32px;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-        <span style="font-size: 1.8rem;">🚨</span>
-        <div>
-            <h2 style="font-size: 1.25rem; font-weight: 700; color: #b91c1c;">Administrative Danger Zone (Multi-Tier Safeguard)</h2>
-            <p style="color: #7f1d1d; font-size: 0.88rem;">Radical operations (dropping/truncating tables) cause irreversible data destruction and are permanently logged to <code>admin_audit_logs</code>.</p>
-        </div>
+<!-- SECTION 1: MySQL Schema Table Browser -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header bg-muted">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Relational Tables (MySQL 8.0 InnoDB Engine)
+    </h2>
+    <span class="badge badge-success">BCNF Verified • utf8mb4</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Table Name</th>
+            <th>Entity Type</th>
+            <th>Row Count</th>
+            <th>Data Size</th>
+            <th>Index Size</th>
+            <th>Collation</th>
+            <th>Maintenance Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tbl in tables %}
+          <tr>
+            <td><strong class="table-code font-bold">{{ tbl.name }}</strong></td>
+            <td><span class="badge badge-info">Relational Table</span></td>
+            <td><strong>{{ tbl.count }}</strong> records</td>
+            <td>Auto</td>
+            <td>Indexed</td>
+            <td>utf8mb4</td>
+            <td>
+              <button type="button" class="btn btn-outline btn-sm text-danger" data-danger-trigger data-action-type="DROP TABLE" data-target-entity="{{ tbl.name }}" data-challenge-phrase="DROP TABLE {{ tbl.name }}">
+                Drop Table
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center p-4 text-muted">No database tables found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <form method="POST" action="{% url 'core_admin:execute_radical_action' %}" id="dangerForm" style="margin-top: 20px;">
-        {% csrf_token %}
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-            <div>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color: #991b1b;">Action Type</label>
-                <select name="action_type" id="actionTypeSelect" onchange="updateChallengeTarget()" 
-                        style="width: 100%; padding: 10px; border: 1px solid #f87171; border-radius: var(--radius); background: white;">
-                    <option value="DROP_TABLE">DROP TABLE (Drop relation schema and data)</option>
-                    <option value="TRUNCATE_TABLE">TRUNCATE TABLE (Purge all records)</option>
-                    <option value="BULK_DELETE">BULK DELETE (Delete all records with triggers)</option>
-                </select>
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color: #991b1b;">Target Table</label>
-                <select name="target_entity" id="targetEntitySelect" onchange="updateChallengeTarget()" 
-                        style="width: 100%; padding: 10px; border: 1px solid #f87171; border-radius: var(--radius); background: white;">
-                    {% for tbl in tables %}
-                    <option value="{{ tbl.name }}">{{ tbl.name }} ({{ tbl.count }} rows)</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <!-- Tier 1: Challenge match -->
-        <div style="margin-bottom: 16px; padding: 14px; background: #fee2e2; border-radius: var(--radius); border: 1px solid #fca5a5;">
-            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #991b1b; margin-bottom: 6px;">
-                Tier 1: Type the exact phrase <code id="challengePrompt" style="background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #f87171; color: #b91c1c;">DROP_TABLE user_accounts</code> to confirm:
-            </label>
-            <input type="text" name="confirmation_text" id="confirmationInput" oninput="verifyChallenge()" required
-                   placeholder="Type the exact text shown above..."
-                   style="width: 100%; padding: 10px 14px; border: 1px solid #f87171; border-radius: var(--radius); font-family: monospace; font-size: 0.95rem;">
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-            <div>
-                <!-- Tier 2: Password check -->
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color: #991b1b;">Tier 2: Admin Password Verification</label>
-                <input type="password" name="admin_password" required placeholder="Re-enter your admin password"
-                       style="width: 100%; padding: 10px 14px; border: 1px solid #f87171; border-radius: var(--radius);">
-            </div>
-            <div>
-                <!-- Tier 3: Mandatory reason -->
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color: #991b1b;">Tier 3: Mandatory Justification Reason</label>
-                <input type="text" name="justification_reason" required placeholder="Why are you performing this radical action?"
-                       style="width: 100%; padding: 10px 14px; border: 1px solid #f87171; border-radius: var(--radius);">
-            </div>
-        </div>
-
-        <button type="submit" id="dangerSubmitBtn" class="btn btn-danger" disabled style="padding: 12px 24px; font-size: 0.95rem; cursor: not-allowed; opacity: 0.5;">
-            🔒 Challenge Incomplete — Button Locked
-        </button>
-    </form>
+  </div>
 </div>
 
-<!-- LIVE TABLES INSPECTOR -->
-<div class="card">
-    <div class="card-header">
-        <h3>Live Database Tables Inspector (MySQL InnoDB)</h3>
-        <span class="badge badge-info">{{ tables|length }} Tables Present</span>
+<!-- ======================================================================
+     SECTION 2: THE DANGER ZONE (High-Visibility Security Component)
+     ====================================================================== -->
+<div class="danger-zone-card">
+  <div class="danger-zone-header">
+    <div>
+      <div class="danger-zone-title">
+        <div class="danger-icon-badge" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <span>THE DANGER ZONE &mdash; Radical Database Operations</span>
+      </div>
+      <p class="danger-zone-desc">
+        Destructive database mutations: Dropping relational tables, wiping transaction logs, or bulk purging accounts cannot be undone. All operations are strictly safeguarded by a 3-tier challenge-response mechanism and permanently recorded to the immutable audit log.
+      </p>
     </div>
-    <div class="card-body" style="padding: 0;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Table Name</th>
-                    <th>Row Count</th>
-                    <th>Engine</th>
-                    <th>Target for Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tbl in tables %}
-                <tr>
-                    <td><code>{{ tbl.name }}</code></td>
-                    <td><strong>{{ tbl.count }}</strong> records</td>
-                    <td><span class="badge badge-info">InnoDB</span></td>
-                    <td>
-                        <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 0.75rem;" onclick="setTarget('{{ tbl.name }}')">
-                            Select in Danger Zone
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  </div>
+
+  <div class="danger-zone-body">
+    <!-- Radical Operation 1: Drop Table -->
+    <div class="danger-action-row">
+      <div class="danger-action-info">
+        <div class="danger-action-title">
+          <span>Drop Table <code>enrollments</code></span>
+          <span class="badge badge-danger">Irreversible Data Loss</span>
+        </div>
+        <div class="danger-action-details">
+          Permanently drops the <code>enrollments</code> table and destroys all student course enrollment records, grade histories, and foreign key constraints.
+        </div>
+      </div>
+      <button type="button" class="btn btn-danger" data-danger-trigger data-action-type="DROP TABLE" data-target-entity="enrollments" data-challenge-phrase="DROP TABLE enrollments">
+        Drop Table
+      </button>
     </div>
+
+    <!-- Radical Operation 2: Truncate Table -->
+    <div class="danger-action-row">
+      <div class="danger-action-info">
+        <div class="danger-action-title">
+          <span>Truncate Table <code>admin_audit_logs</code></span>
+          <span class="badge badge-danger">Security Risk</span>
+        </div>
+        <div class="danger-action-details">
+          Empties all rows from the audit log table and resets the auto-increment counter. Destroys historical accountability records.
+        </div>
+      </div>
+      <button type="button" class="btn btn-danger" data-danger-trigger data-action-type="TRUNCATE TABLE" data-target-entity="admin_audit_logs" data-challenge-phrase="TRUNCATE TABLE admin_audit_logs">
+        Truncate Table
+      </button>
+    </div>
+
+    <!-- Radical Operation 3: Purge Inactive Users -->
+    <div class="danger-action-row">
+      <div class="danger-action-info">
+        <div class="danger-action-title">
+          <span>Purge All Inactive / Deactivated Accounts</span>
+          <span class="badge badge-warning">Cascading Deletion</span>
+        </div>
+        <div class="danger-action-details">
+          Executes a bulk <code>DELETE FROM user_accounts WHERE is_active = FALSE</code> which cascades into subtype tables and wipes associated orphaned data.
+        </div>
+      </div>
+      <button type="button" class="btn btn-danger" data-danger-trigger data-action-type="PURGE" data-target-entity="INACTIVE_USERS" data-challenge-phrase="PURGE INACTIVE USERS">
+        Purge Inactive Users
+      </button>
+    </div>
+  </div>
 </div>
-
-<script>
-    function updateChallengeTarget() {
-        const action = document.getElementById('actionTypeSelect').value;
-        const target = document.getElementById('targetEntitySelect').value;
-        const expected = (action + " " + target).toUpperCase();
-        document.getElementById('challengePrompt').textContent = expected;
-        verifyChallenge();
-    }
-
-    function setTarget(tableName) {
-        document.getElementById('targetEntitySelect').value = tableName;
-        updateChallengeTarget();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function verifyChallenge() {
-        const action = document.getElementById('actionTypeSelect').value;
-        const target = document.getElementById('targetEntitySelect').value;
-        const expected = (action + " " + target).toUpperCase();
-        const entered = document.getElementById('confirmationInput').value.trim().toUpperCase();
-        const btn = document.getElementById('dangerSubmitBtn');
-
-        if (entered === expected) {
-            btn.disabled = false;
-            btn.style.opacity = "1";
-            btn.style.cursor = "pointer";
-            btn.textContent = "⚡ Execute Radical Decision (" + action + ")";
-        } else {
-            btn.disabled = true;
-            btn.style.opacity = "0.5";
-            btn.style.cursor = "not-allowed";
-            btn.textContent = "🔒 Challenge Incomplete — Button Locked";
-        }
-    }
-
-    // Initialize on load
-    window.addEventListener('DOMContentLoaded', updateChallengeTarget);
-</script>
 {% endblock %}
+
+{% block modals %}
+<!-- ======================================================================
+     MULTI-STEP SAFEGUARD MODAL (3-Tier Verification Gatekeeper)
+     ====================================================================== -->
+<div class="modal" id="dangerZoneModal" role="dialog" aria-modal="true" aria-labelledby="dangerModalTitle" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog modal-danger-dialog">
+    <div class="modal-danger-header">
+      <h3 class="modal-title" id="dangerModalTitle">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Danger Zone: <span id="dangerModalActionTitle">DROP TABLE enrollments</span></span>
+      </h3>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'core_admin:execute_radical_action' %}" id="dangerActionForm">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" id="dangerActionType" value="DROP TABLE">
+      <input type="hidden" name="target_entity" id="dangerTargetEntity" value="enrollments">
+
+      <div class="modal-body">
+        <!-- Impact Warning Callout -->
+        <div class="danger-callout">
+          <div class="danger-callout-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            IRREVERSIBLE DATA LOSS WARNING
+          </div>
+          <div class="danger-callout-text">
+            This action immediately bypasses soft-deletes and executes raw DDL/DML on the MySQL InnoDB engine. Cascading foreign keys will drop dependent rows. This operation cannot be rolled back.
+          </div>
+        </div>
+
+        <div class="challenge-steps">
+          <!-- TIER 1: Exact Phrase Challenge -->
+          <div class="challenge-step" id="dangerStep1">
+            <div class="step-label">
+              <span class="step-number">1</span>
+              <span>Tier 1: Type the Exact Verification Phrase</span>
+            </div>
+            <div class="challenge-code-container">
+              <span class="challenge-code-text" id="challengePhraseDisplay">DROP TABLE enrollments</span>
+              <span class="text-xs text-muted">Character-exact required</span>
+            </div>
+            <input type="text" name="confirmation_text" name="confirmation_text" id="challengePhraseInput" class="form-control text-mono" placeholder="Type the phrase above to confirm..." autocomplete="off" spellcheck="false" required>
+            <div id="phraseMatchIndicator" class="challenge-match-indicator">
+              <span class="match-pending">Waiting for exact input...</span>
+            </div>
+          </div>
+
+          <!-- TIER 2: Admin Password Re-Authentication -->
+          <div class="challenge-step" id="dangerStep2">
+            <div class="step-label">
+              <span class="step-number">2</span>
+              <span>Tier 2: Re-enter Administrator Password</span>
+            </div>
+            <input type="password" name="admin_password" id="adminPasswordInput" class="form-control" placeholder="Enter your current login password" required autocomplete="current-password">
+            <span class="form-help">Confirms user identity to prevent session hijacking.</span>
+          </div>
+
+          <!-- TIER 3: Mandatory Justification Reason for Audit Log -->
+          <div class="challenge-step" id="dangerStep3">
+            <div class="step-label">
+              <span class="step-number">3</span>
+              <span>Tier 3: Justification Note for the Immutable Audit Log</span>
+            </div>
+            <textarea name="justification_reason" id="actionReasonInput" class="form-control" placeholder="Provide detailed administrative justification for this radical action (minimum 15 characters required)..." rows="2" required></textarea>
+            <div id="reasonCharCounter" class="char-counter text-danger">0/15 characters (minimum 15 required)</div>
+          </div>
+        </div>
+
+        <!-- Audit Disclaimer Note -->
+        <div class="audit-disclaimer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Non-repudiation: Your User ID, client IP address, timestamp, and justification will be logged to <code>admin_audit_logs</code>.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel &amp; Abort</button>
+        <button type="submit" id="executeRadicalBtn" class="btn btn-danger btn-execute-radical" disabled aria-disabled="true" title="All 3 verification steps must pass before proceeding.">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Execute Radical Action
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/danger_zone.js' %}"></script>
+{% endblock %}
+

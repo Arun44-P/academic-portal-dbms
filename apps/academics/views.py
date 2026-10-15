@@ -113,6 +113,40 @@ def drop_course(request, enrollment_id):
     return redirect('student:dashboard')
 
 
+@login_required
+def student_attendance_grades(request):
+    if request.user.role != 'STUDENT':
+        messages.error(request, "Access restricted to Students.")
+        return redirect('accounts:role_dispatch')
+
+    student = get_object_or_404(StudentProfile, user=request.user)
+    enrollments = Enrollment.objects.filter(student=student, status='ENROLLED').select_related(
+        'offering__course', 'offering__semester', 'offering__instructor__user'
+    )
+
+    return render(request, 'student/attendance_grades.html', {
+        'student': student,
+        'enrollments': enrollments,
+    })
+
+
+@login_required
+def student_research_role(request):
+    if request.user.role != 'STUDENT':
+        messages.error(request, "Access restricted to Students.")
+        return redirect('accounts:role_dispatch')
+
+    student = get_object_or_404(StudentProfile, user=request.user)
+    research_roles = ResearchJunior.objects.filter(student=student).select_related('project__pi__user')
+    stipends = StipendDisbursement.objects.filter(junior__student=student).order_by('-disbursement_year', '-disbursement_month')
+
+    return render(request, 'student/research_role.html', {
+        'student': student,
+        'research_roles': research_roles,
+        'stipends': stipends,
+    })
+
+
 # ============================================================================
 # OFFICE STAFF VIEWS
 # ============================================================================
@@ -144,6 +178,44 @@ def office_dashboard(request):
 
 
 @login_required
+def stipend_queue_view(request):
+    if request.user.role != 'OFFICE_STAFF':
+        messages.error(request, "Access restricted to Office Staff.")
+        return redirect('accounts:role_dispatch')
+
+    staff = get_object_or_404(OfficeStaffProfile, user=request.user)
+
+    stipend_queue = StipendDisbursement.objects.filter(
+        payment_status='APPROVED_BY_PI'
+    ).select_related('junior__project__pi__user', 'junior__student')
+
+    processed_stipends = StipendDisbursement.objects.filter(
+        payment_status='PROCESSED'
+    ).select_related('junior', 'processed_by__user').order_by('-disbursed_at')[:15]
+
+    return render(request, 'office/stipend_queue.html', {
+        'staff': staff,
+        'stipend_queue': stipend_queue,
+        'processed_stipends': processed_stipends,
+    })
+
+
+@login_required
+def schedule_view(request):
+    if request.user.role != 'OFFICE_STAFF':
+        messages.error(request, "Access restricted to Office Staff.")
+        return redirect('accounts:role_dispatch')
+
+    staff = get_object_or_404(OfficeStaffProfile, user=request.user)
+    offerings = CourseOffering.objects.all().select_related('course', 'instructor__user', 'semester')
+
+    return render(request, 'office/schedule.html', {
+        'staff': staff,
+        'offerings': offerings,
+    })
+
+
+@login_required
 def disburse_stipend(request, disbursement_id):
     if request.user.role != 'OFFICE_STAFF':
         messages.error(request, "Access denied.")
@@ -156,7 +228,8 @@ def disburse_stipend(request, disbursement_id):
         tx_ref = request.POST.get('transaction_reference', '').strip()
         if not tx_ref:
             messages.error(request, "Transaction reference number is mandatory for financial disbursement.")
-            return redirect('office:dashboard')
+            next_url = request.POST.get('next') or 'office:dashboard'
+            return redirect(next_url)
 
         stipend.office_processed = True
         stipend.processed_by = staff
@@ -170,4 +243,5 @@ def disburse_stipend(request, disbursement_id):
             f"Stipend of ₹{stipend.amount} for {stipend.junior.full_name} marked DISBURSED (Ref: {tx_ref})!"
         )
 
-    return redirect('office:dashboard')
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'office:dashboard'
+    return redirect(next_url)

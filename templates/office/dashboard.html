@@ -1,160 +1,194 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Office Staff & Accounts Portal{% endblock %}
+{% block title %}Office Operations Dashboard{% endblock %}
+{% block breadcrumb %}Office Staff / Operations Overview{% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 24px;">
-    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                <h1 style="font-size: 1.5rem; font-weight: 700;">{{ staff.user.get_full_name|default:staff.user.username }}</h1>
-                <span class="role-badge role-staff">{{ staff.get_section_display }}</span>
-            </div>
-            <div style="color: var(--text-muted); font-size: 0.92rem;">
-                {{ staff.designation }} • Employee Code: <code>{{ staff.employee_code }}</code>
-            </div>
-        </div>
-        <div style="display: flex; gap: 16px;">
-            <div class="stat-card" style="padding: 12px 18px; margin-bottom: 0;">
-                <div class="label">Stipends Pending</div>
-                <div class="value" style="font-size: 1.4rem; color: var(--danger);">{{ stipend_queue|length }}</div>
-            </div>
-        </div>
-    </div>
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Academic Administration &amp; Accounts Dashboard</h1>
+    <p class="text-sm text-muted">Operations management: fee collection, research stipend disbursements, room scheduling, and registration clearance.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Open Stipend Queue
+    </a>
+  </div>
 </div>
 
-<!-- STIPEND DISBURSEMENT QUEUE -->
-<div class="card" style="border: 2px solid var(--primary-light);">
-    <div class="card-header" style="background-color: #eff6ff;">
-        <div>
-            <h3 style="color: var(--primary);">💸 Research Office: Stipend Disbursement Queue</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
-                Stipends verified and academically approved by Supervising Professors (PIs) awaiting financial payout.
-            </p>
-        </div>
-        <span class="badge badge-info">{{ stipend_queue|length }} In Queue</span>
+<!-- 4 Key Office Metrics -->
+<div class="stats-grid">
+  <!-- Metric 1: Pending Stipend Clearances -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Stipends in Accounts Queue</div>
+        <div class="stat-value text-warning">₹1,03,000</div>
+      </div>
+      <div class="stat-icon stat-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
     </div>
-    <div class="card-body" style="padding: 0;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Junior Fellow</th>
-                    <th>Grant & Project</th>
-                    <th>PI Professor</th>
-                    <th>Cycle</th>
-                    <th>Amount</th>
-                    <th>PI Approval Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stp in stipend_queue %}
-                <tr>
-                    <td>
-                        <strong>{{ stp.junior.full_name }}</strong>
-                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ stp.junior.get_cadre_display }}</div>
-                    </td>
-                    <td>
-                        <code>{{ stp.junior.project.project_code }}</code>
-                        <div style="font-size: 0.78rem; color: var(--text-muted);">{{ stp.junior.project.title|truncatechars:35 }}</div>
-                    </td>
-                    <td>Prof. {{ stp.junior.project.pi.user.last_name }}</td>
-                    <td>{{ stp.disbursement_month }}/{{ stp.disbursement_year }}</td>
-                    <td><strong style="color: #047857; font-size: 1rem;">₹{{ stp.amount }}</strong></td>
-                    <td><span class="badge badge-success">{{ stp.pi_approval_date }}</span></td>
-                    <td>
-                        <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.82rem;" 
-                                onclick="openDisburseModal('{{ stp.id }}', '{{ stp.junior.full_name }}', '{{ stp.amount }}')">
-                            💳 Disburse Payment
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
-                        🎉 All PI-approved stipends have been disbursed! No pending claims in queue.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="stat-footer">
+      <span class="badge badge-warning">3 Claims Approved by PIs</span>
+      <span class="text-muted">Awaiting release</span>
     </div>
+  </div>
+
+  <!-- Metric 2: Unpaid Student Dues -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Pending Tuition Dues</div>
+        <div class="stat-value text-danger">₹4,25,000</div>
+      </div>
+      <div class="stat-icon stat-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-negative">12 Students Defaulters</span>
+      <span class="text-muted">Fine applicable</span>
+    </div>
+  </div>
+
+  <!-- Metric 3: Classroom Utilization -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Lecture Hall Utilization</div>
+        <div class="stat-value">84.2%</div>
+      </div>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge badge-success">0 Schedule Clashes</span>
+      <span class="text-muted">24 Rooms Booked</span>
+    </div>
+  </div>
+
+  <!-- Metric 4: Active Enrollments -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Active Student Registry</div>
+        <div class="stat-value">1,240</div>
+      </div>
+      <div class="stat-icon stat-icon-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">Fall 2026 Term</span>
+      <span class="text-muted">UG &amp; PG</span>
+    </div>
+  </div>
 </div>
 
-<!-- RECENTLY DISBURSED STIPENDS -->
-<div class="card">
+<!-- Two-Column Operations Layout -->
+<div class="grid-2-col">
+  <!-- Urgent Stipend Disbursement Action Summary -->
+  <div class="card">
     <div class="card-header">
-        <h3>📜 Disbursed Stipend Transaction History</h3>
-        <span class="badge badge-info">Accounting Clearance Trail</span>
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Stipends Awaiting Bank Transfer
+      </h2>
+      <a href="{% url 'office:stipend_queue' %}" class="btn btn-outline btn-sm">Process All</a>
     </div>
-    <div class="card-body" style="padding: 0;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Junior Fellow</th>
-                    <th>Cycle</th>
-                    <th>Amount Paid</th>
-                    <th>Transaction Reference</th>
-                    <th>Disbursed At</th>
-                    <th>Processed By</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stp in processed_stipends %}
-                <tr>
-                    <td><strong>{{ stp.junior.full_name }}</strong></td>
-                    <td>{{ stp.disbursement_month }}/{{ stp.disbursement_year }}</td>
-                    <td>₹{{ stp.amount }}</td>
-                    <td><code>{{ stp.transaction_reference }}</code></td>
-                    <td style="font-size: 0.82rem; color: var(--text-muted);">{{ stp.disbursed_at|date:"Y-m-d H:i" }}</td>
-                    <td>{{ stp.processed_by.user.get_full_name|default:stp.processed_by.user.username }}</td>
-                    <td><span class="badge badge-success">DISBURSED</span></td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No disbursed transactions recorded yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Fellow Name</th>
+              <th>Grant Agency</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="font-bold">Aarav Sharma</div>
+                <div class="text-xs text-muted">PI: Dr. K. Raman</div>
+              </td>
+              <td><span class="table-code">DST-SERB</span></td>
+              <td><strong class="text-success">₹31,000</strong></td>
+              <td>
+                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="font-bold">Pooja Nair</div>
+                <div class="text-xs text-muted">PI: Dr. K. Raman</div>
+              </td>
+              <td><span class="table-code">DRDO</span></td>
+              <td><strong class="text-success">₹35,000</strong></td>
+              <td>
+                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="font-bold">Siddharth Menon</div>
+                <div class="text-xs text-muted">PI: Dr. Sunita V.</div>
+              </td>
+              <td><span class="table-code">DST-SERB</span></td>
+              <td><strong class="text-success">₹37,000</strong></td>
+              <td>
+                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
+              </td>
+            </tr>
+          </tbody>
         </table>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Modal for Disbursing Payment -->
-<div id="disburseModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: var(--radius); width: 100%; max-width: 480px; padding: 28px; box-shadow: var(--shadow-md);">
-        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Record Stipend Disbursement</h3>
-        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">
-            Release funds for <strong id="modalJuniorName"></strong> (Amount: <strong id="modalAmount"></strong>)
-        </p>
-
-        <form method="POST" id="modalDisburseForm" action="">
-            {% csrf_token %}
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Bank / Payment Gateway Reference Number</label>
-                <input type="text" name="transaction_reference" required placeholder="e.g. UTR-98218942-SBI or CHQ-09121"
-                       style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);">
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
-                <button type="button" class="btn btn-outline" onclick="closeDisburseModal()">Cancel</button>
-                <button type="submit" class="btn btn-success">Confirm & Disburse</button>
-            </div>
-        </form>
+  <!-- Operational Short-Cuts & Timetable Health -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Room Scheduling &amp; Facility Allocations
+      </h2>
+      <a href="{% url 'office:schedule' %}" class="btn btn-outline btn-sm">Master Timetable</a>
     </div>
+    <div class="card-body">
+      <div class="flex items-center justify-between" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-light);">
+        <div>
+          <div class="font-bold text-main">Main Academic Block (LH-1 to LH-6)</div>
+          <div class="text-xs text-muted">6 Lecture Theatres • Total Seats: 420</div>
+        </div>
+        <span class="badge badge-success">92% Utilized</span>
+      </div>
+      <div class="flex items-center justify-between" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-light);">
+        <div>
+          <div class="font-bold text-main">Computing &amp; DBMS Laboratories (LAB-1 to LAB-5)</div>
+          <div class="text-xs text-muted">180 Workstations with Gigabit LAN</div>
+        </div>
+        <span class="badge badge-success">88% Utilized</span>
+      </div>
+      <div class="flex items-center justify-between" style="padding: 0.75rem 0;">
+        <div>
+          <div class="font-bold text-main">Seminar Hall &amp; Auditorium</div>
+          <div class="text-xs text-muted">Available for guest lectures &amp; symposiums</div>
+        </div>
+        <span class="badge badge-info">Available 03:00 PM</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'office:schedule' %}" class="text-sm font-semibold">
+        Inspect Room Clashes &amp; Weekly Grid &rarr;
+      </a>
+    </div>
+  </div>
 </div>
-
-<script>
-    function openDisburseModal(stipendId, juniorName, amount) {
-        document.getElementById('modalJuniorName').textContent = juniorName;
-        document.getElementById('modalAmount').textContent = "₹" + amount;
-        document.getElementById('modalDisburseForm').action = "/office-portal/stipend/disburse/" + stipendId + "/";
-        const modal = document.getElementById('disburseModal');
-        modal.style.display = 'flex';
-    }
-
-    function closeDisburseModal() {
-        document.getElementById('disburseModal').style.display = 'none';
-    }
-</script>
 {% endblock %}
+

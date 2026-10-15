@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Research Juniors &amp; Stipend Approvals{% endblock %}
+{% block breadcrumb %}Research Wing / Fellows &amp; Stipend Approval{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Research Fellows &amp; Monthly Stipend Approvals</h1>
+    <p class="text-sm text-muted">Supervise junior researchers (JRF, SRF, Ph.D. scholars) and approve monthly stipend claims to release funds to the Office Accounts queue.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'teacher:research_projects' %}" class="btn btn-outline btn-sm">Sponsored Projects</a>
+  </div>
+</div>
+
+<!-- Workflow Notice Banner -->
+<div class="card" style="margin-bottom: 1.75rem; background-color: var(--color-primary-50); border-color: var(--color-primary-100);">
+  <div class="card-body" style="padding: 1rem 1.25rem;">
+    <div class="flex items-center gap-3">
+      <div class="stat-icon stat-icon-primary" style="width: 36px; height: 36px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div style="font-size: 0.875rem; color: var(--color-primary-900);">
+        <strong>Stage 1 of 2-Stage Payment Architecture:</strong> Once you review the fellow's attendance and academic milestones and click <em>"Approve Monthly Stipend"</em>, the payment record is committed to the database with <code>pi_approved = TRUE</code> and queued for disbursement by Office Staff.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: Monthly Stipend Approval Action Table -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Pending &amp; Active Monthly Stipend Claims
+    </h2>
+    <span class="badge badge-warning">1 Action Required</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Fellow Name &amp; Role</th>
+            <th>Project Code</th>
+            <th>Disbursement Month</th>
+            <th>Monthly Stipend</th>
+            <th>Monthly Milestone</th>
+            <th>Current Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stp in pending_stipends %}
+          <tr style="background-color: #fffdf5;">
+            <td>
+              <div class="font-bold text-main">{{ stp.junior.full_name }}</div>
+              <div class="text-xs text-muted">{{ stp.junior.get_cadre_display }} • {{ stp.junior.email }}</div>
+            </td>
+            <td><span class="table-code font-bold">{{ stp.junior.project.project_code }}</span></td>
+            <td><strong>Cycle {{ stp.disbursement_month }}/{{ stp.disbursement_year }}</strong></td>
+            <td><strong class="text-success" style="font-size: 1rem;">₹{{ stp.amount }}</strong></td>
+            <td>
+              <span class="badge badge-success">Milestone Submitted</span>
+            </td>
+            <td>
+              <span class="badge badge-warning">
+                <span class="badge-dot"></span>
+                Pending PI Approval
+              </span>
+            </td>
+            <td>
+              <button type="button" class="btn btn-success btn-sm" data-modal-target="#approveStipendModal" 
+                      onclick="openApproveModal('{{ stp.id }}', '{{ stp.junior.full_name|escapejs }}', '{{ stp.junior.project.project_code|escapejs }}', '{{ stp.disbursement_month }}/{{ stp.disbursement_year }}', '₹{{ stp.amount }}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Approve Stipend
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center p-4 text-muted">No monthly stipend claims awaiting your approval.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: Roster of All Attached Research Fellows -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/><circle cx="19" cy="11" r="2"/></svg>
+      Supervised Research Personnel Directory
+    </h2>
+    <span class="text-xs text-muted">Total: 4 Scholars</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Fellow Name</th>
+            <th>Fellowship Tier</th>
+            <th>Project Title</th>
+            <th>Monthly Stipend</th>
+            <th>Appointment Tenure</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="font-bold">Aarav Sharma</div>
+              <div class="text-xs text-muted">aarav.sharma@uni.edu • 2026CS101</div>
+            </td>
+            <td><span class="badge badge-primary">JRF</span></td>
+            <td>Autonomous Query Optimization (DST-SERB)</td>
+            <td><strong>₹31,000</strong></td>
+            <td>Jan 2026 – Dec 2026</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Pooja Nair</div>
+              <div class="text-xs text-muted">pooja.nair@uni.edu • SCH-2024-12</div>
+            </td>
+            <td><span class="badge badge-purple">SRF</span></td>
+            <td>Cryptographic Key Storage (DRDO)</td>
+            <td><strong>₹35,000</strong></td>
+            <td>Jul 2024 – Jun 2026</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Siddharth Menon</div>
+              <div class="text-xs text-muted">siddharth.m@uni.edu • PhD-2023-04</div>
+            </td>
+            <td><span class="badge badge-info">Ph.D. Scholar</span></td>
+            <td>Autonomous Query Optimization (DST-SERB)</td>
+            <td><strong>₹37,000</strong></td>
+            <td>Aug 2023 – Jul 2027</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Naveen Kumar</div>
+              <div class="text-xs text-muted">naveen.k@uni.edu • Intern-2026-08</div>
+            </td>
+            <td><span class="badge badge-neutral">Research Intern</span></td>
+            <td>Autonomous Query Optimization (DST-SERB)</td>
+            <td><strong>₹12,000</strong></td>
+            <td>Sep 2026 – Nov 2026</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- 1-Click PI Stipend Approval Modal -->
+<div class="modal" id="approveStipendModal" role="dialog" aria-modal="true" aria-labelledby="stipendModalTitle" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title text-success" id="stipendModalTitle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve Monthly Stipend Claim
+      </h3>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
+    </div>
+    <form method="POST" id="approveStipendForm" action="">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="approve_stipend">
+      <input type="hidden" name="disbursement_id" id="modalDisbursementId">
+
+      <div class="modal-body">
+        <p>You are certifying that the research fellow has satisfied monthly attendance, computational tasks, and milestone deliverables for this billing cycle.</p>
+
+        <div style="background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 1.25rem; margin: 1rem 0; border: 1px solid var(--border-light);">
+          <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+            <span class="text-sm text-muted">Fellow Name:</span>
+            <span class="font-bold text-main" id="modalFellowName">Aarav Sharma</span>
+          </div>
+          <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+            <span class="text-sm text-muted">Project Grant:</span>
+            <span class="table-code font-bold" id="modalProjectCode">DST-SERB-0841</span>
+          </div>
+          <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+            <span class="text-sm text-muted">Claim Period:</span>
+            <span class="font-semibold text-main" id="modalClaimMonth">October 2026</span>
+          </div>
+          <div class="flex items-center justify-between" style="border-top: 1px dashed var(--border-medium); padding-top: 0.5rem; margin-top: 0.5rem;">
+            <span class="text-sm text-muted font-bold">Stipend Amount:</span>
+            <span class="font-bold text-success text-lg" id="modalStipendAmount">₹31,000</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="piApprovalNotes" class="form-label">Principal Investigator (PI) Endorsement Remarks</label>
+          <textarea name="pi_notes" id="piApprovalNotes" class="form-control" placeholder="e.g. Satisfactory progress on query optimizer cost model benchmark." rows="2">Satisfactory progress on query optimizer benchmark; attendance verified.</textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-success">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirm &amp; Route to Office Accounts
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openApproveModal(id, fellowName, projectCode, month, amount) {
+    document.getElementById('modalDisbursementId').value = id;
+    document.getElementById('modalFellowName').textContent = fellowName;
+    document.getElementById('modalProjectCode').textContent = projectCode;
+    document.getElementById('modalClaimMonth').textContent = month;
+    document.getElementById('modalStipendAmount').textContent = amount;
+  }
+</script>
+{% endblock %}
+

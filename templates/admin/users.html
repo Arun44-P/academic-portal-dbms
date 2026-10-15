@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User &amp; Role Directory{% endblock %}
+{% block breadcrumb %}Administrator / User &amp; Role Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Institutional User &amp; Role Directory</h1>
+    <p class="text-sm text-muted">Manage authenticated accounts across Table-per-Type (TPT) schemas, assign roles, and handle provisioning.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-primary btn-sm" data-modal-target="#addUserModal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      Add / Provision User
+    </button>
+  </div>
+</div>
+
+<!-- Toolbar: Search & Role Filters -->
+<div class="toolbar">
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="form-control" placeholder="Search by name, email, roll no, or employee code..." data-table-filter="usersTable" style="max-width: 420px;">
+  </div>
+  <div class="flex items-center gap-2">
+    <select id="roleFilterSelect" class="form-select form-select-sm" style="width: auto;">
+      <option value="ALL">All Roles</option>
+      <option value="STUDENT">Students</option>
+      <option value="TEACHER">Faculty &amp; Instructors</option>
+      <option value="OFFICE">Office Staff</option>
+      <option value="ADMIN">System Admins</option>
+    </select>
+    <select id="statusFilterSelect" class="form-select form-select-sm" style="width: auto;">
+      <option value="ALL">All Statuses</option>
+      <option value="ACTIVE" selected>Active Only</option>
+      <option value="INACTIVE">Deactivated</option>
+    </select>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover" id="usersTable">
+        <thead>
+          <tr>
+            <th>User Account</th>
+            <th>System Role</th>
+            <th>Role-Specific Identifier</th>
+            <th>Department / Program</th>
+            <th>Account Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div class="font-bold text-main">{{ u.get_full_name|default:u.username }}</div>
+              <div class="text-xs text-muted">{{ u.email|default:"No email" }} • @{{ u.username }}</div>
+            </td>
+            <td>
+              <span class="badge {% if u.role == 'ADMIN' %}badge-danger{% elif u.role == 'TEACHER' %}badge-purple{% elif u.role == 'STUDENT' %}badge-info{% else %}badge-warning{% endif %}">
+                {{ u.get_role_display }}
+              </span>
+            </td>
+            <td>
+              {% if u.role == 'STUDENT' and u.student_profile %}
+                <span class="table-code font-bold">{{ u.student_profile.roll_number }}</span>
+              {% elif u.role == 'TEACHER' and u.instructor_profile %}
+                <span class="table-code font-bold">{{ u.instructor_profile.employee_code }}</span>
+              {% elif u.role == 'OFFICE_STAFF' and u.office_profile %}
+                <span class="table-code font-bold">{{ u.office_profile.employee_code }}</span>
+              {% elif u.role == 'ADMIN' and u.admin_profile %}
+                <span class="table-code font-bold">{{ u.admin_profile.employee_code }}</span>
+              {% else %}
+                <span class="text-muted text-xs">N/A</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.role == 'STUDENT' and u.student_profile %}
+                {{ u.student_profile.program.name }} (Sem {{ u.student_profile.current_semester }})
+              {% elif u.role == 'TEACHER' and u.instructor_profile %}
+                {{ u.instructor_profile.department.name }} ({{ u.instructor_profile.get_faculty_category_display }})
+              {% elif u.role == 'OFFICE_STAFF' and u.office_profile %}
+                {{ u.office_profile.get_section_display }}
+              {% elif u.role == 'ADMIN' and u.admin_profile %}
+                {{ u.admin_profile.designation }}
+              {% else %}
+                <span class="text-muted text-xs">Campus General</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.is_active %}
+                <span class="badge badge-success"><span class="badge-dot"></span> ACTIVE</span>
+              {% else %}
+                <span class="badge badge-danger"><span class="badge-dot"></span> DEACTIVATED</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u != request.user %}
+                <a href="{% url 'core_admin:toggle_user_status' u.id %}" class="btn btn-outline btn-sm {% if u.is_active %}text-danger{% else %}text-success{% endif %}">
+                  {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+                </a>
+              {% else %}
+                <span class="text-xs text-muted font-semibold">Current Session</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center p-4 text-muted">No users found matching query.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Add User Modal with Dynamic Role Sub-Forms -->
+<div class="modal" id="addUserModal" role="dialog" aria-modal="true" aria-labelledby="addUserModalTitle" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title" id="addUserModalTitle">Provision New Institutional User</h3>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
+    </div>
+    <form method="POST" action="{% url 'core_admin:users' %}" id="addUserForm">
+      {% csrf_token %}
+      <div class="modal-body">
+        <!-- Common Authentication Fields (user_accounts table) -->
+        <h4 style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-primary-800); border-bottom: 1px solid var(--border-light); padding-bottom: 0.4rem;">
+          1. Base Authentication Identity (`user_accounts`)
+        </h4>
+
+        <div class="grid-2-col" style="margin-bottom: 0.75rem;">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label for="newUsername" class="form-label required">Username</label>
+            <input type="text" name="username" id="newUsername" class="form-control" placeholder="e.g. rohan_k" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label for="newEmail" class="form-label required">Institutional Email</label>
+            <input type="email" name="email" id="newEmail" class="form-control" placeholder="user@university.edu" required>
+          </div>
+        </div>
+
+        <div class="grid-2-col" style="margin-bottom: 0.75rem;">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label for="newFullName" class="form-label required">Full Legal Name</label>
+            <input type="text" name="full_name" id="newFullName" class="form-control" placeholder="e.g. Rohan Kapoor" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label for="newPassword" class="form-label required">Temporary Password</label>
+            <input type="password" name="password" id="newPassword" class="form-control" placeholder="Temporary password" required>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="roleSelector" class="form-label required">Select Institutional Role (TPT Specialization)</label>
+          <select name="role" id="roleSelector" class="form-select font-semibold" required>
+            <option value="STUDENT" selected>Student (`students` table)</option>
+            <option value="PERMANENT_FACULTY">Permanent Faculty (`permanent_faculty` table)</option>
+            <option value="ASSISTANT_PROFESSOR">Assistant Professor (`assistant_professors` table)</option>
+            <option value="VISITING_PROFESSOR">Visiting Professor (`visiting_professors` table)</option>
+            <option value="OFFICE">Office Staff (`office_staff` table)</option>
+            <option value="ADMIN">System Administrator (`admins` table)</option>
+          </select>
+        </div>
+
+        <!-- Dynamic Sub-Forms based on chosen Role -->
+        <h4 style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-primary-800); border-bottom: 1px solid var(--border-light); padding-bottom: 0.4rem;">
+          2. Role-Specific Profile Attributes
+        </h4>
+
+        <!-- Sub-form: STUDENT -->
+        <div id="subform-STUDENT" class="role-subform">
+          <div class="grid-3-col" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="studentRoll" class="form-label required">Roll Number</label>
+              <input type="text" name="roll_number" id="studentRoll" class="form-control" placeholder="e.g. 2026CS199">
+            </div>
+            <div class="form-group">
+              <label for="studentProgram" class="form-label required">Degree Program</label>
+              <input type="text" name="program" id="studentProgram" class="form-control" placeholder="e.g. B.Tech Computer Science" value="B.Tech Computer Science">
+            </div>
+            <div class="form-group">
+              <label for="studentSem" class="form-label required">Current Semester</label>
+              <input type="number" name="current_semester" id="studentSem" class="form-control" value="6" min="1" max="10">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-form: PERMANENT_FACULTY -->
+        <div id="subform-PERMANENT_FACULTY" class="role-subform" style="display: none;">
+          <div class="grid-3-col" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label required">Employee Code</label>
+              <input type="text" name="emp_code_perm" class="form-control" placeholder="FAC-CS-XX">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Provident Fund (PF) No</label>
+              <input type="text" name="pf_number" class="form-control" placeholder="PF-98XXX">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Department</label>
+              <input type="text" name="dept_perm" class="form-control" value="Computer Science & Engg">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-form: ASSISTANT_PROFESSOR -->
+        <div id="subform-ASSISTANT_PROFESSOR" class="role-subform" style="display: none;">
+          <div class="grid-3-col" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label required">Employee Code</label>
+              <input type="text" name="emp_code_asst" class="form-control" placeholder="FAC-ASST-XX">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Probation End Date</label>
+              <input type="date" name="probation_end_date" class="form-control" value="2027-12-31">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Senior Mentor ID</label>
+              <input type="text" name="mentor_id" class="form-control" placeholder="e.g. FAC-CS-04">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-form: VISITING_PROFESSOR -->
+        <div id="subform-VISITING_PROFESSOR" class="role-subform" style="display: none;">
+          <div class="grid-3-col" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label required">Home Institution</label>
+              <input type="text" name="home_institution" class="form-control" placeholder="e.g. IIT Delhi">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Contract End Date</label>
+              <input type="date" name="contract_end_date" class="form-control" value="2027-05-31">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Honorarium / Month</label>
+              <input type="number" name="honorarium" class="form-control" placeholder="₹1,20,000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-form: OFFICE -->
+        <div id="subform-OFFICE" class="role-subform" style="display: none;">
+          <div class="grid-2-col" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label required">Staff Code</label>
+              <input type="text" name="staff_code" class="form-control" placeholder="OFF-ACC-XX">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Designation / Section</label>
+              <input type="text" name="designation" class="form-control" placeholder="e.g. Senior Accounts Officer">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Provision &amp; Save User</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const roleSelector = document.getElementById('roleSelector');
+    const subforms = document.querySelectorAll('.role-subform');
+
+    function updateSubform() {
+      const selected = roleSelector.value;
+      subforms.forEach(sf => sf.style.display = 'none');
+
+      const target = document.getElementById(`subform-${selected}`);
+      if (target) {
+        target.style.display = 'block';
+      }
+    }
+
+    if (roleSelector) {
+      roleSelector.addEventListener('change', updateSubform);
+    }
+  });
+</script>
+{% endblock %}
+

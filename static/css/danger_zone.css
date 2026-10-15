@@ -1,0 +1,303 @@
+/* ==========================================================================
+   ACADEMIC PORTAL - DANGER ZONE & SECURITY MODAL STYLES
+   Admin Safeguard Modal, High-Visibility Warnings, Challenge Verification
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. The Danger Zone Container Box
+   -------------------------------------------------------------------------- */
+.danger-zone-card {
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: linear-gradient(to bottom, #ffffff, #fff5f5);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+.danger-zone-header {
+  background-color: var(--color-danger-bg);
+  border-bottom: 2px solid var(--color-danger-border);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.danger-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-danger-text);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.danger-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-danger);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.danger-zone-desc {
+  font-size: 0.875rem;
+  color: #7f1d1d;
+  margin-top: 0.25rem;
+}
+
+.danger-zone-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.danger-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  gap: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.danger-action-row:hover {
+  border-color: var(--color-danger);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12);
+}
+
+.danger-action-info {
+  flex-grow: 1;
+}
+
+.danger-action-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.danger-action-details {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. Radical Safeguard Modal
+   -------------------------------------------------------------------------- */
+.modal-danger-dialog {
+  max-width: 620px;
+  border: 2px solid var(--color-danger);
+  box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25);
+}
+
+.modal-danger-header {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-danger-header .modal-title {
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.2rem;
+}
+
+.modal-danger-header .modal-close {
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+.modal-danger-header .modal-close:hover {
+  opacity: 1;
+}
+
+.danger-callout {
+  background-color: #fff1f2;
+  border-left: 4px solid var(--color-danger);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-xs);
+  margin-bottom: 1.5rem;
+}
+
+.danger-callout-title {
+  font-weight: 700;
+  color: #991b1b;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.danger-callout-text {
+  font-size: 0.8125rem;
+  color: #7f1d1d;
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   3. Verification Challenge Box & Steps
+   -------------------------------------------------------------------------- */
+.challenge-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.challenge-step {
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.15rem;
+  background-color: var(--bg-surface);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.challenge-step.step-completed {
+  border-color: var(--color-success);
+  background-color: #f0fdf4;
+}
+
+.step-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.step-number {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--color-primary-800);
+  color: #ffffff;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.challenge-step.step-completed .step-number {
+  background-color: var(--color-success);
+}
+
+.challenge-code-container {
+  background-color: #1e293b;
+  color: #38bdf8;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  user-select: all;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #334155;
+}
+
+.challenge-code-text {
+  color: #f87171;
+}
+
+.challenge-match-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.match-pending {
+  color: var(--color-warning-text);
+}
+
+.match-success {
+  color: var(--color-success-text);
+}
+
+.match-error {
+  color: var(--color-danger);
+}
+
+.form-control.input-match-success {
+  border-color: var(--color-success);
+  background-color: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.char-counter {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. Execute Radical Button & Disclaimer
+   -------------------------------------------------------------------------- */
+.btn-execute-radical {
+  background-color: var(--color-danger);
+  color: #ffffff;
+  border-color: #b91c1c;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+  transition: all var(--transition-normal);
+}
+
+.btn-execute-radical:not(:disabled):hover {
+  background-color: #b91c1c;
+  border-color: #991b1b;
+  box-shadow: 0 6px 14px rgba(185, 28, 28, 0.4);
+}
+
+.btn-execute-radical:disabled {
+  background-color: #fca5a5;
+  border-color: #fca5a5;
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.65;
+}
+
+.audit-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background-color: var(--bg-surface-alt);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-xs);
+  border: 1px dashed var(--border-medium);
+  margin-top: 0.5rem;
+}
+

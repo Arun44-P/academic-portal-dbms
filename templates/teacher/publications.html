@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Research Publications Portfolio{% endblock %}
+{% block breadcrumb %}Research Wing / Publications Portfolio{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Research Publications &amp; Scholarly Works</h1>
+    <p class="text-sm text-muted">Curate peer-reviewed journal papers, conference proceedings, patents, and DOI citations.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-primary btn-sm" data-modal-target="#addPublicationModal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add New Publication
+    </button>
+  </div>
+</div>
+
+<!-- Bibliographic Metrics Summary -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Total Publications</div>
+        <div class="stat-value">28</div>
+      </div>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">18 Journals • 10 Conf</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Citations Count</div>
+        <div class="stat-value">642</div>
+      </div>
+      <div class="stat-icon stat-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">+84 this year</span>
+      <span class="text-muted">Scopus / Google Scholar</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">h-index / i10-index</div>
+        <div class="stat-value">14 <span class="text-sm text-muted font-normal">/ 18</span></div>
+      </div>
+      <div class="stat-icon stat-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge badge-success">High Academic Impact</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Average Impact Factor</div>
+        <div class="stat-value">4.82</div>
+      </div>
+      <div class="stat-icon stat-icon-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="text-muted text-xs">Q1/Q2 Indexed Journals</span>
+    </div>
+  </div>
+</div>
+
+<!-- Publications Filter & Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="form-control" placeholder="Search publication title, venue, or year..." data-table-filter="publicationsTable" style="max-width: 360px;">
+    </div>
+    <div class="flex items-center gap-2">
+      <select class="form-select form-select-sm" style="width: auto;">
+        <option value="ALL">All Types</option>
+        <option value="JOURNAL">Peer-Reviewed Journals</option>
+        <option value="CONFERENCE">Conference Proceedings</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover" id="publicationsTable">
+        <thead>
+          <tr>
+            <th>Paper Title &amp; Authors</th>
+            <th>Venue / Journal</th>
+            <th>Type</th>
+            <th>Year</th>
+            <th>Impact Factor</th>
+            <th>DOI Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="font-bold text-main">
+                Adaptive Cost Models for Query Cardinality Estimation in Multi-Core Relational Engines
+              </div>
+              <div class="text-xs text-muted" style="margin-top: 0.2rem;">
+                Authors: <strong>K. Raman</strong>, S. Menon, A. Sharma
+              </div>
+            </td>
+            <td>IEEE Transactions on Knowledge and Data Engineering (TKDE)</td>
+            <td><span class="badge badge-purple">Journal (Q1)</span></td>
+            <td>2026</td>
+            <td><strong class="text-success">8.9</strong></td>
+            <td>
+              <a href="https://doi.org/10.1109/TKDE.2026.01928" target="_blank" rel="noopener noreferrer" class="table-code">
+                10.1109/TKDE.2026.01928 &nearr;
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="font-bold text-main">
+                Fine-Grained Concurrency Control and Lock Contention Reduction in Cloud-Native MySQL
+              </div>
+              <div class="text-xs text-muted" style="margin-top: 0.2rem;">
+                Authors: <strong>K. Raman</strong>, Sunita V.
+              </div>
+            </td>
+            <td>ACM SIGMOD International Conference on Management of Data</td>
+            <td><span class="badge badge-info">Conference</span></td>
+            <td>2025</td>
+            <td><span class="text-muted">A* Rated</span></td>
+            <td>
+              <a href="https://doi.org/10.1145/3580305.359954" target="_blank" rel="noopener noreferrer" class="table-code">
+                10.1145/3580305.359954 &nearr;
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="font-bold text-main">
+                Zero-Knowledge Verifiable Queries Over Outsourced Relational Databases
+              </div>
+              <div class="text-xs text-muted" style="margin-top: 0.2rem;">
+                Authors: P. Nair, <strong>K. Raman</strong>, A. Gupta
+              </div>
+            </td>
+            <td>Elsevier Journal of Systems Architecture</td>
+            <td><span class="badge badge-purple">Journal (Q1)</span></td>
+            <td>2025</td>
+            <td><strong class="text-success">4.2</strong></td>
+            <td>
+              <a href="https://doi.org/10.1016/j.sysarc.2025.10284" target="_blank" rel="noopener noreferrer" class="table-code">
+                10.1016/j.sysarc.2025.10284 &nearr;
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="font-bold text-main">
+                Autonomous Buffer Pool Allocation Under High-Velocity Analytical Query Loads
+              </div>
+              <div class="text-xs text-muted" style="margin-top: 0.2rem;">
+                Authors: <strong>K. Raman</strong>, M. Verma
+              </div>
+            </td>
+            <td>VLDB Journal (Very Large Data Bases)</td>
+            <td><span class="badge badge-purple">Journal (Q1)</span></td>
+            <td>2024</td>
+            <td><strong class="text-success">5.7</strong></td>
+            <td>
+              <a href="https://doi.org/10.1007/s00778-024-00812-x" target="_blank" rel="noopener noreferrer" class="table-code">
+                10.1007/s00778-024-00812-x &nearr;
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Add Publication Modal -->
+<div class="modal" id="addPublicationModal" role="dialog" aria-modal="true" aria-labelledby="addPubTitle" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title" id="addPubTitle">Record Research Publication</h3>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
+    </div>
+    <form method="POST" action="{% url 'teacher:publications' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="pubTitle" class="form-label required">Paper Title</label>
+          <input type="text" name="title" id="pubTitle" class="form-control" placeholder="Full title of publication" required>
+        </div>
+
+        <div class="grid-2-col" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="pubVenue" class="form-label required">Journal / Conference Name</label>
+            <input type="text" name="venue" id="pubVenue" class="form-control" placeholder="e.g. IEEE TKDE" required>
+          </div>
+          <div class="form-group">
+            <label for="pubType" class="form-label required">Publication Type</label>
+            <select name="publication_type" id="pubType" class="form-select" required>
+              <option value="JOURNAL">Peer-Reviewed Journal</option>
+              <option value="CONFERENCE">Conference Proceedings</option>
+              <option value="BOOK_CHAPTER">Book Chapter</option>
+              <option value="PATENT">Patent Granted</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-3-col" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="pubYear" class="form-label required">Year of Publication</label>
+            <input type="number" name="year" id="pubYear" class="form-control" value="2026" min="1990" max="2035" required>
+          </div>
+          <div class="form-group">
+            <label for="pubImpact" class="form-label">Impact Factor</label>
+            <input type="number" step="0.1" name="impact_factor" id="pubImpact" class="form-control" placeholder="e.g. 5.4">
+          </div>
+          <div class="form-group">
+            <label for="pubDoi" class="form-label">DOI Identifier</label>
+            <input type="text" name="doi" id="pubDoi" class="form-control" placeholder="10.1109/...">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="pubAuthors" class="form-label required">Co-Authors</label>
+          <input type="text" name="authors" id="pubAuthors" class="form-control" placeholder="Comma separated list of author names" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Publication to Portfolio</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Research Assistantship Status{% endblock %}
+{% block breadcrumb %}Research Assistantship &amp; Stipend{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Research Fellowship &amp; Assistantship Portal</h1>
+    <p class="text-sm text-muted">Details on your sponsored research appointment, supervising Principal Investigator (PI), and monthly stipend releases.</p>
+  </div>
+  <div class="page-header-actions">
+    <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+      Fellowship Role: Junior Research Fellow (JRF)
+    </span>
+  </div>
+</div>
+
+<!-- Project Overview Card -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header bg-muted">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Active Sponsored Project Details
+    </h2>
+    <span class="badge badge-success">Grant Active</span>
+  </div>
+  <div class="card-body">
+    <div class="grid-2-col" style="margin-bottom: 0;">
+      <div>
+        <div class="text-xs text-muted font-semibold uppercase">Project Title</div>
+        <div class="font-bold text-lg text-main" style="margin-top: 0.25rem;">
+          Autonomous Query Optimization in High-Concurrency Cloud DBMS
+        </div>
+        <div class="text-sm text-muted" style="margin-top: 0.35rem;">
+          Grant Code: <span class="table-code font-bold">DST-SERB-CRG-2025-0841</span>
+        </div>
+        <div class="text-sm text-muted" style="margin-top: 0.25rem;">
+          Funding Agency: <strong>Department of Science and Technology (SERB)</strong>
+        </div>
+      </div>
+
+      <div style="border-left: 1px solid var(--border-light); padding-left: 1.5rem;">
+        <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+          <span class="text-sm text-muted">Supervising PI:</span>
+          <span class="font-bold text-main">Dr. K. Raman (Professor, CSE)</span>
+        </div>
+        <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+          <span class="text-sm text-muted">Appointment Term:</span>
+          <span class="font-semibold text-main">Jan 2026 – Dec 2026</span>
+        </div>
+        <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+          <span class="text-sm text-muted">Monthly Stipend Entitlement:</span>
+          <span class="font-bold text-success text-lg">₹31,000 / month</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-muted">Bank Account on File:</span>
+          <span class="text-mono text-sm">SBI ••••••••4892</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stipend Disbursement Ledger Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Monthly Stipend Payment History
+    </h2>
+    <span class="text-xs text-muted">Two-Stage Verification: PI Approval &rarr; Accounts Disbursement</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Disbursement Month</th>
+            <th>Amount</th>
+            <th>PI Approval Date</th>
+            <th>Disbursement Status</th>
+            <th>Payment Mode</th>
+            <th>Transaction Ref / UTR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Month 1: Processed -->
+          <tr>
+            <td><strong>September 2026</strong></td>
+            <td><strong class="text-main">₹31,000</strong></td>
+            <td>02 Oct 2026 by Dr. K. Raman</td>
+            <td>
+              <span class="badge badge-success">
+                <span class="badge-dot"></span>
+                Disbursed to Bank
+              </span>
+            </td>
+            <td>NEFT / Direct Credit</td>
+            <td><span class="table-code">SBIN-00293847291</span></td>
+          </tr>
+
+          <!-- Month 2: Processed -->
+          <tr>
+            <td><strong>August 2026</strong></td>
+            <td><strong class="text-main">₹31,000</strong></td>
+            <td>01 Sep 2026 by Dr. K. Raman</td>
+            <td>
+              <span class="badge badge-success">
+                <span class="badge-dot"></span>
+                Disbursed to Bank
+              </span>
+            </td>
+            <td>NEFT / Direct Credit</td>
+            <td><span class="table-code">SBIN-00184720194</span></td>
+          </tr>
+
+          <!-- Month 3: Approved by PI (In Office Queue) -->
+          <tr>
+            <td><strong>October 2026 (Current)</strong></td>
+            <td><strong class="text-main">₹31,000</strong></td>
+            <td>14 Oct 2026 by Dr. K. Raman</td>
+            <td>
+              <span class="badge badge-warning">
+                <span class="badge-dot"></span>
+                Approved by PI (In Office Queue)
+              </span>
+            </td>
+            <td>Awaiting Processing</td>
+            <td><span class="text-muted text-xs">Pending Accounts Release</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <span class="text-xs text-muted">
+      For discrepancies regarding stipend approvals or bank account updates, contact your supervising PI or the Research Accounts Office.
+    </span>
+  </div>
+</div>
+{% endblock %}
+

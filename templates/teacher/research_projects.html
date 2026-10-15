@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Research Projects &amp; Grants{% endblock %}
+{% block breadcrumb %}Research Wing / Sponsored Projects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Sponsored Research Grants &amp; Projects</h1>
+    <p class="text-sm text-muted">Principal Investigator (PI) &amp; Co-Investigator dashboard for externally funded research, capital budgets, and stipend earmarks.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'teacher:research_juniors' %}" class="btn btn-outline btn-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
+      Manage Junior Fellows
+    </a>
+  </div>
+</div>
+
+<!-- Active Grants Grid -->
+<div class="grid-2-col">
+  <!-- Grant 1: DST SERB -->
+  <div class="card card-hover">
+    <div class="card-header">
+      <div>
+        <span class="table-code font-bold">DST-SERB-CRG-2025-0841</span>
+        <div class="text-xs text-muted" style="margin-top: 0.2rem;">Agency: Science &amp; Engineering Research Board</div>
+      </div>
+      <span class="badge badge-success">
+        <span class="badge-dot"></span>
+        ACTIVE GRANT
+      </span>
+    </div>
+    <div class="card-body">
+      <h3 style="font-size: 1.2rem; margin-bottom: 0.65rem;">
+        Autonomous Query Optimization in High-Concurrency Cloud DBMS
+      </h3>
+      <p class="text-sm text-muted">
+        Investigation into machine learning-assisted cardinality estimation and lock contention minimization under multi-tenant MySQL InnoDB workloads.
+      </p>
+
+      <div style="background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 1rem; margin: 1.25rem 0;">
+        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+          <span class="text-xs text-muted uppercase font-bold">Total Grant Award:</span>
+          <span class="font-bold text-main" style="font-size: 1.1rem;">₹48,50,000</span>
+        </div>
+        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+          <span class="text-xs text-muted uppercase font-bold">Allocated Stipend Pool:</span>
+          <span class="font-bold text-success">₹24,00,000 (Earmarked)</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-muted" style="margin-bottom: 0.25rem;">
+          <span>Stipend Budget Expended:</span>
+          <span class="font-bold text-main">₹14,88,000 (62%)</span>
+        </div>
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-success" style="width: 62%;"></div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Tenure:</span>
+          <span class="font-semibold text-main">Jan 2025 – Dec 2027 (36 Months)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Principal Investigator (PI):</span>
+          <span class="font-bold text-main">Dr. K. Raman (You)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Co-Investigators (Co-PI):</span>
+          <span class="text-main">Dr. Sunita V. (Dept of CSE)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Attached Fellows:</span>
+          <span class="badge badge-purple">2 JRFs, 1 Ph.D. Scholar</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'teacher:research_juniors' %}" class="btn btn-primary btn-sm">
+        Stipend Approvals (1 Pending)
+      </a>
+      <a href="{% url 'teacher:publications' %}" class="btn btn-outline btn-sm">
+        View Publications (4)
+      </a>
+    </div>
+  </div>
+
+  <!-- Grant 2: DRDO -->
+  <div class="card card-hover">
+    <div class="card-header">
+      <div>
+        <span class="table-code font-bold">DRDO-CARS-2024-1102</span>
+        <div class="text-xs text-muted" style="margin-top: 0.2rem;">Agency: Defence Research &amp; Development Organisation</div>
+      </div>
+      <span class="badge badge-success">
+        <span class="badge-dot"></span>
+        ACTIVE GRANT
+      </span>
+    </div>
+    <div class="card-body">
+      <h3 style="font-size: 1.2rem; margin-bottom: 0.65rem;">
+        Cryptographic Key Storage &amp; Secure Multi-Party Consensus in Distributed Ledgers
+      </h3>
+      <p class="text-sm text-muted">
+        Zero-knowledge proof verification algorithms and hardware security module (HSM) integrations for tactical military communications.
+      </p>
+
+      <div style="background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 1rem; margin: 1.25rem 0;">
+        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+          <span class="text-xs text-muted uppercase font-bold">Total Grant Award:</span>
+          <span class="font-bold text-main" style="font-size: 1.1rem;">₹36,90,000</span>
+        </div>
+        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+          <span class="text-xs text-muted uppercase font-bold">Allocated Stipend Pool:</span>
+          <span class="font-bold text-success">₹18,00,000 (Earmarked)</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-muted" style="margin-bottom: 0.25rem;">
+          <span>Stipend Budget Expended:</span>
+          <span class="font-bold text-main">₹7,20,000 (40%)</span>
+        </div>
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-success" style="width: 40%;"></div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Tenure:</span>
+          <span class="font-semibold text-main">Jul 2024 – Jun 2026 (24 Months)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Principal Investigator (PI):</span>
+          <span class="font-bold text-main">Dr. K. Raman (You)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Co-Investigators (Co-PI):</span>
+          <span class="text-main">Prof. Alok Gupta (Dept of ECE)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Attached Fellows:</span>
+          <span class="badge badge-purple">1 SRF</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'teacher:research_juniors' %}" class="btn btn-outline btn-sm">
+        Stipend Approvals
+      </a>
+      <a href="{% url 'teacher:publications' %}" class="btn btn-outline btn-sm">
+        View Publications (2)
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

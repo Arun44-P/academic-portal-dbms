@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Portal — Live Prototype Viewer</title>
+
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Core Portal Stylesheets from academic_portal/static/css -->
+  <link rel="stylesheet" href="academic_portal/static/css/main.css">
+  <link rel="stylesheet" href="academic_portal/static/css/components.css">
+  <link rel="stylesheet" href="academic_portal/static/css/dashboard.css">
+  <link rel="stylesheet" href="academic_portal/static/css/danger_zone.css">
+
+  <style>
+    /* Live Server Role Preview Bar */
+    .prototype-bar {
+      background: linear-gradient(90deg, #0f172a, #1e293b);
+      color: #ffffff;
+      padding: 0.6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--color-primary-600);
+      font-size: 0.85rem;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: var(--shadow-md);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .proto-badge {
+      background-color: var(--color-primary-600);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .role-switcher-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .role-switcher-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: #ffffff;
+    }
+
+    .role-switcher-btn.active {
+      background-color: #ffffff;
+      color: var(--color-primary-900);
+      border-color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Page View Container Controller */
+    .view-page {
+      display: none;
+    }
+
+    .view-page.active-view {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .subnav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .subnav-tab-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+
+    .subnav-tab-btn:hover {
+      background-color: var(--bg-surface-alt);
+      color: var(--text-main);
+    }
+
+    .subnav-tab-btn.active {
+      background-color: var(--color-primary-600);
+      color: #ffffff;
+      border-color: var(--color-primary-600);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================================================================
+     LIVE SERVER DEMO SWITCHER BAR
+     ====================================================================== -->
+<div class="prototype-bar">
+  <div class="flex items-center gap-3">
+    <span class="proto-badge">Live Server Preview</span>
+    <span style="font-weight: 600;">Academic &amp; Research Portal (DBMS Project)</span>
+  </div>
+
+  <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+    <span class="text-xs text-muted" style="color: #94a3b8 !important;">Switch Role View:</span>
+    <button type="button" class="role-switcher-btn active" onclick="switchRole('STUDENT')">🎓 Student</button>
+    <button type="button" class="role-switcher-btn" onclick="switchRole('TEACHER')">👨‍🏫 Faculty</button>
+    <button type="button" class="role-switcher-btn" onclick="switchRole('OFFICE')">🏢 Office Staff</button>
+    <button type="button" class="role-switcher-btn" onclick="switchRole('ADMIN')">🛡️ Administrator</button>
+    <button type="button" class="role-switcher-btn" onclick="switchRole('LOGIN')">🔐 Login Screen</button>
+  </div>
+</div>
+
+<div class="app-layout" id="mainAppLayout">
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- ======================================================================
+       SIDEBAR NAVIGATION
+       ====================================================================== -->
+  <aside class="app-sidebar" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <a href="#" class="sidebar-brand">
+        <div class="sidebar-brand-logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <span class="brand-title">ACADEMIA</span>
+          <span class="brand-sub">DBMS PORTAL</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Navigation Groups based on User Role -->
+    <nav class="sidebar-nav">
+      <!-- ---------------- Student Role Navigation ---------------- -->
+      <div id="navGroupStudent">
+        <div class="nav-section-title">Student Academic</div>
+        <a href="javascript:void(0)" onclick="showStudentPage('dashboard')" class="nav-link active student-nav" id="snav-dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showStudentPage('courses')" class="nav-link student-nav" id="snav-courses">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Course Catalog</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showStudentPage('attendance')" class="nav-link student-nav" id="snav-attendance">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Attendance &amp; Grades</span>
+        </a>
+
+        <div class="nav-section-title">Research Assistantship</div>
+        <a href="javascript:void(0)" onclick="showStudentPage('research')" class="nav-link student-nav" id="snav-research">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span>Research Junior Status</span>
+        </a>
+      </div>
+
+      <!-- ---------------- Teacher Role Navigation ---------------- -->
+      <div id="navGroupTeacher" style="display: none;">
+        <div class="nav-section-title">Instruction &amp; Teaching</div>
+        <a href="javascript:void(0)" onclick="showTeacherPage('dashboard')" class="nav-link active teacher-nav" id="tnav-dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Faculty Overview</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showTeacherPage('sections')" class="nav-link teacher-nav" id="tnav-sections">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Course Sections</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showTeacherPage('attendance_entry')" class="nav-link teacher-nav" id="tnav-attendance_entry">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Log Attendance</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showTeacherPage('marks_entry')" class="nav-link teacher-nav" id="tnav-marks_entry">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>Assessment &amp; Marks</span>
+        </a>
+
+        <div class="nav-section-title">Research Wing</div>
+        <a href="javascript:void(0)" onclick="showTeacherPage('research_projects')" class="nav-link teacher-nav" id="tnav-research_projects">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+          <span>Grants &amp; Projects</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showTeacherPage('research_juniors')" class="nav-link teacher-nav" id="tnav-research_juniors">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/><circle cx="19" cy="11" r="2"/></svg>
+          <span>Junior Fellows &amp; Stipends</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showTeacherPage('publications')" class="nav-link teacher-nav" id="tnav-publications">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>Publications</span>
+        </a>
+      </div>
+
+      <!-- ---------------- Office Role Navigation ---------------- -->
+      <div id="navGroupOffice" style="display: none;">
+        <div class="nav-section-title">Administration &amp; Accounts</div>
+        <a href="javascript:void(0)" onclick="showOfficePage('dashboard')" class="nav-link active office-nav" id="onav-dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Operations Summary</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showOfficePage('stipend_queue')" class="nav-link office-nav" id="onav-stipend_queue">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>Stipend Disbursement</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showOfficePage('schedule')" class="nav-link office-nav" id="onav-schedule">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Timetable &amp; Rooms</span>
+        </a>
+      </div>
+
+      <!-- ---------------- Admin Role Navigation ---------------- -->
+      <div id="navGroupAdmin" style="display: none;">
+        <div class="nav-section-title">System Governance</div>
+        <a href="javascript:void(0)" onclick="showAdminPage('dashboard')" class="nav-link active admin-nav" id="anav-dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Institute Analytics</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showAdminPage('users')" class="nav-link admin-nav" id="anav-users">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>User &amp; Role Manager</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showAdminPage('database_console')" class="nav-link admin-nav" id="anav-database_console">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <span>Database &amp; Danger Zone</span>
+        </a>
+        <a href="javascript:void(0)" onclick="showAdminPage('audit_logs')" class="nav-link admin-nav" id="anav-audit_logs">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          <span>Security Audit Trail</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">Aarav Sharma</div>
+          <span class="sidebar-user-role" id="sidebarUserRole">STUDENT</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================================
+       MAIN CONTENT CONTAINER
+       ====================================================================== -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <button type="button" class="topbar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-breadcrumb">
+          <span>Academia</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current" id="topbarBreadcrumb">Student Portal</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="term-badge">
+          <span class="badge-dot" style="background-color: var(--color-success);"></span>
+          <span>Fall 2026 Term Active</span>
+        </div>
+        <span class="user-role-pill role-student" id="topbarRolePill">STUDENT</span>
+
+        <div class="topbar-user-menu">
+          <button type="button" class="user-profile-btn" id="userMenuBtn" aria-expanded="false">
+            <span class="user-avatar-sm" id="topbarAvatar">A</span>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="user-dropdown" id="userMenuDropdown">
+            <div class="dropdown-user-header">
+              <div class="dropdown-user-name" id="dropdownUserName">Aarav Sharma</div>
+              <div class="dropdown-user-email" id="dropdownUserEmail">aarav.sharma@uni.edu</div>
+            </div>
+            <a href="javascript:void(0)" onclick="switchRole('LOGIN')" class="dropdown-link text-danger">Logout / Switch</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-content" id="main-content">
+      <!-- Welcome Flash Banner -->
+      <div class="messages-container" id="prototypeAlert">
+        <div class="alert alert-info alert-dismissible" role="alert">
+          <span class="alert-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </span>
+          <div class="alert-content">
+            <strong>Interactive Live Server Preview Active:</strong> Click any link in the sidebar or use the top banner to explore all 4 distinct role portals (Student, Faculty, Office Staff, Administrator) with functioning live JavaScript features (Danger Zone, Attendance Grid, Marks Validation, Stipend Modals).
+          </div>
+          <button type="button" class="alert-close" data-dismiss="alert">&times;</button>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           ROLE VIEW 1: STUDENT VIEWS
+           ============================================================== -->
+      <div id="viewStudentGroup">
+        <!-- 1.1 Student Dashboard -->
+        <div id="viewStudentDashboard" class="view-page active-view">
+          <div class="card" style="margin-bottom: 1.75rem; border-left: 4px solid var(--color-primary-600);">
+            <div class="card-body">
+              <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+                <div class="flex items-center gap-4">
+                  <div class="stat-icon stat-icon-primary" style="width: 56px; height: 56px; font-size: 1.5rem; font-weight: 800;">
+                    CS
+                  </div>
+                  <div>
+                    <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Aarav Sharma</h1>
+                    <div class="flex items-center gap-3 text-sm text-muted" style="flex-wrap: wrap;">
+                      <span><strong>Roll No:</strong> <span class="text-mono">2026CS101</span></span>
+                      <span>•</span>
+                      <span><strong>Program:</strong> B.Tech Computer Science &amp; Engineering</span>
+                      <span>•</span>
+                      <span><strong>Semester:</strong> Semester 6</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-success"><span class="badge-dot"></span> Academic Standing: Regular</span>
+                  <span class="badge badge-purple"><span class="badge-dot"></span> Research Fellow Attached</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 KPIs -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div><div class="stat-label">Enrolled Courses</div><div class="stat-value">6</div></div>
+                <div class="stat-icon stat-icon-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+              </div>
+              <div class="stat-footer"><span class="stat-delta delta-positive">Full Term Load</span><span class="text-muted">Spring/Fall 2026</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div><div class="stat-label">Cumulative Attendance</div><div class="stat-value text-success">84.6%</div></div>
+                <div class="stat-icon stat-icon-success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              </div>
+              <div class="stat-footer"><span class="stat-delta delta-positive">&ge; 75% Safe</span><span class="text-muted">No detention flags</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div><div class="stat-label">Registered Credits</div><div class="stat-value">22 <span class="text-sm text-muted font-medium">/ 24</span></div></div>
+                <div class="stat-icon stat-icon-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              </div>
+              <div class="stat-footer"><span class="stat-delta delta-neutral">CGPA: 8.92</span><span class="text-muted">Top 10th percentile</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div><div class="stat-label">Tuition Dues</div><div class="stat-value text-success">₹0</div></div>
+                <div class="stat-icon stat-icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              </div>
+              <div class="stat-footer"><span class="badge badge-success">Clearance Issued</span><span class="text-muted">Receipt #REC-2026-904</span></div>
+            </div>
+          </div>
+
+          <!-- Schedule & Grades Summary -->
+          <div class="grid-2-col">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">Today's Class Schedule</h2><button type="button" class="btn btn-outline btn-sm" onclick="showStudentPage('courses')">All Courses</button></div>
+              <div class="card-body p-0">
+                <table class="table table-hover">
+                  <thead><tr><th>Time</th><th>Course</th><th>Room</th><th>Instructor</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="badge badge-neutral">09:00 - 10:30 AM</span></td><td><div class="font-bold">CS301: Database Management Systems</div><div class="text-xs text-muted">Section A • Lecture Hall 3</div></td><td><span class="table-code">LH-302</span></td><td>Dr. K. Raman (Prof)</td></tr>
+                    <tr><td><span class="badge badge-neutral">11:00 - 12:30 PM</span></td><td><div class="font-bold">CS304: Operating Systems Design</div><div class="text-xs text-muted">Section B • Core Theory</div></td><td><span class="table-code">CS-104</span></td><td>Dr. Sunita V.</td></tr>
+                    <tr><td><span class="badge badge-neutral">02:00 - 04:00 PM</span></td><td><div class="font-bold">CS311: Relational Query Optimization Lab</div><div class="text-xs text-muted">Lab Batch 1</div></td><td><span class="table-code">LAB-4</span></td><td>Prof. M. Verma</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">Attendance &amp; Grades Snapshot</h2><button type="button" class="btn btn-outline btn-sm" onclick="showStudentPage('attendance')">Full Report</button></div>
+              <div class="card-body p-0">
+                <table class="table">
+                  <thead><tr><th>Code</th><th>Attendance</th><th>Midterm</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="table-code">CS301</span></td><td><div class="flex items-center gap-2"><div class="progress" style="width: 80px;"><div class="progress-bar progress-bar-success" style="width: 88%;"></div></div><span class="text-xs font-semibold text-success">88%</span></div></td><td>27.5 / 30</td><td><span class="badge badge-success">Grade A</span></td></tr>
+                    <tr><td><span class="table-code">CS304</span></td><td><div class="flex items-center gap-2"><div class="progress" style="width: 80px;"><div class="progress-bar progress-bar-warning" style="width: 72%;"></div></div><span class="text-xs font-semibold text-warning">72%</span></div></td><td>23.0 / 30</td><td><span class="badge badge-warning">Caution</span></td></tr>
+                    <tr><td><span class="table-code">CS308</span></td><td><div class="flex items-center gap-2"><div class="progress" style="width: 80px;"><div class="progress-bar progress-bar-danger" style="width: 60%;"></div></div><span class="text-xs font-semibold text-danger">60%</span></div></td><td>19.5 / 30</td><td><span class="badge badge-danger">Detention Risk</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.2 Student Courses -->
+        <div id="viewStudentCourses" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Semester Course Offerings &amp; Registration</h1><p class="text-sm text-muted">Active semester courses for Fall 2026, capacity levels, and prerequisites.</p></div>
+            <span class="badge badge-info" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Enrolled Credits: <strong>18 / 24 Max</strong></span>
+          </div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header"><h2 class="card-title">Registered Courses (Fall 2026)</h2></div>
+            <div class="card-body p-0">
+              <table class="table table-hover">
+                <thead><tr><th>Code</th><th>Course Name</th><th>Credits</th><th>Section</th><th>Instructor</th><th>Room</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="table-code font-bold">CS301</span></td><td><strong>Database Management Systems</strong></td><td><span class="badge badge-neutral">4.0</span></td><td>Section A</td><td>Dr. K. Raman</td><td>LH-302 • Mon, Wed 09:00 AM</td><td><button type="button" class="btn btn-outline btn-sm text-danger" onclick="alert('Drop modal confirmed for CS301')">Drop Course</button></td></tr>
+                  <tr><td><span class="table-code font-bold">CS304</span></td><td><strong>Operating Systems Design</strong></td><td><span class="badge badge-neutral">4.0</span></td><td>Section B</td><td>Dr. Sunita V.</td><td>CS-104 • Tue, Thu 11:00 AM</td><td><button type="button" class="btn btn-outline btn-sm text-danger" onclick="alert('Drop modal confirmed for CS304')">Drop Course</button></td></tr>
+                  <tr><td><span class="table-code font-bold">CS311</span></td><td><strong>Relational DBMS Laboratory</strong></td><td><span class="badge badge-neutral">2.0</span></td><td>Lab Batch 1</td><td>Prof. M. Verma</td><td>LAB-4 • Wed 02:00 PM</td><td><button type="button" class="btn btn-outline btn-sm text-danger" onclick="alert('Drop modal confirmed for CS311')">Drop Course</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.3 Student Attendance & Grades -->
+        <div id="viewStudentAttendance" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Attendance Tracking &amp; Detention Risk</h1><p class="text-sm text-muted">Course attendance progress bars with official academic code thresholds (&ge;75% Safe, 65-74% Caution, &lt;65% Detention).</p></div>
+          </div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body p-0">
+              <table class="table table-hover">
+                <thead><tr><th>Course</th><th>Attended</th><th>Percentage</th><th style="min-width: 220px;">Progress Bar</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>CS301: Database Management Systems</strong></td><td>32 / 36</td><td><strong class="text-success">88.9%</strong></td><td><div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: 88.9%;">88.9%</div></div></td><td><span class="badge badge-success">Safe (&ge;75%)</span></td></tr>
+                  <tr><td><strong>CS304: Operating Systems Design</strong></td><td>23 / 32</td><td><strong class="text-warning">71.9%</strong></td><td><div class="progress progress-lg"><div class="progress-bar progress-bar-warning" style="width: 71.9%;">71.9%</div></div></td><td><span class="badge badge-warning">Caution (65%-74%)</span></td></tr>
+                  <tr style="background-color: #fff8f8;"><td><strong class="text-danger">CS308: Computer Networks &amp; Protocols</strong></td><td>18 / 30</td><td><strong class="text-danger">60.0%</strong></td><td><div class="progress progress-lg"><div class="progress-bar progress-bar-danger" style="width: 60%;">60.0%</div></div></td><td><span class="badge badge-danger">Detention Risk (&lt;65%)</span></td></tr>
+                  <tr><td><strong>CS311: Relational DBMS Laboratory</strong></td><td>12 / 12</td><td><strong class="text-success">100.0%</strong></td><td><div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: 100%;">100%</div></div></td><td><span class="badge badge-success">Exemplary</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.4 Student Research Role -->
+        <div id="viewStudentResearch" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Research Fellowship &amp; Assistantship</h1><p class="text-sm text-muted">Appointment under sponsored research grant and monthly stipend status.</p></div>
+            <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Junior Research Fellow (JRF)</span>
+          </div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header bg-muted"><h2 class="card-title">Sponsored Project Details</h2><span class="badge badge-success">Grant Active</span></div>
+            <div class="card-body">
+              <div class="grid-2-col" style="margin-bottom: 0;">
+                <div>
+                  <div class="text-xs text-muted uppercase font-bold">Project Title</div>
+                  <div class="font-bold text-lg text-main">Autonomous Query Optimization in High-Concurrency Cloud DBMS</div>
+                  <div class="text-sm text-muted" style="margin-top: 0.25rem;">Grant Code: <span class="table-code font-bold">DST-SERB-CRG-2025-0841</span></div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;"><span class="text-muted">Supervising PI:</span><span class="font-bold text-main">Dr. K. Raman (Prof, CSE)</span></div>
+                  <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;"><span class="text-muted">Monthly Stipend:</span><span class="font-bold text-success text-lg">₹31,000 / month</span></div>
+                  <div class="flex items-center justify-between"><span class="text-muted">Bank Destination:</span><span class="text-mono">SBI ••••••••4892</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Stipend Payment History</h2></div>
+            <div class="card-body p-0">
+              <table class="table table-hover">
+                <thead><tr><th>Billing Month</th><th>Amount</th><th>Approval Date</th><th>Status</th><th>UTR Reference</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>September 2026</strong></td><td>₹31,000</td><td>02 Oct 2026 by Dr. K. Raman</td><td><span class="badge badge-success">Disbursed to Bank</span></td><td><span class="table-code">SBIN-00293847291</span></td></tr>
+                  <tr><td><strong>August 2026</strong></td><td>₹31,000</td><td>01 Sep 2026 by Dr. K. Raman</td><td><span class="badge badge-success">Disbursed to Bank</span></td><td><span class="table-code">SBIN-00184720194</span></td></tr>
+                  <tr><td><strong>October 2026</strong></td><td>₹31,000</td><td>14 Oct 2026 by Dr. K. Raman</td><td><span class="badge badge-warning">Approved by PI (In Office Queue)</span></td><td><span class="text-muted text-xs">Awaiting Accounts Release</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           ROLE VIEW 2: TEACHER VIEWS
+           ============================================================== -->
+      <div id="viewTeacherGroup" style="display: none;">
+        <!-- 2.1 Teacher Dashboard -->
+        <div id="viewTeacherDashboard" class="view-page">
+          <div class="card" style="margin-bottom: 1.75rem; border-left: 4px solid var(--color-primary-600);">
+            <div class="card-body">
+              <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+                <div class="flex items-center gap-4">
+                  <div class="stat-icon stat-icon-primary" style="width: 56px; height: 56px; font-size: 1.5rem; font-weight: 800;">DR</div>
+                  <div>
+                    <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Dr. K. Raman, Ph.D.</h1>
+                    <div class="flex items-center gap-3 text-sm text-muted" style="flex-wrap: wrap;">
+                      <span><strong>Emp ID:</strong> <span class="text-mono">FAC-CS-04</span></span>
+                      <span>•</span>
+                      <span><strong>Department:</strong> Computer Science &amp; Engineering</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Permanent Faculty (Tenured Professor)</span>
+                  <span class="badge badge-success">Active Term</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Faculty KPIs -->
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Sections</div><div class="stat-value">3</div></div><div class="stat-icon stat-icon-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">CS301, CS311, CS420</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Students</div><div class="stat-value">142</div></div><div class="stat-icon stat-icon-success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">Avg Attendance: 86.4%</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Research Grants</div><div class="stat-value">2</div></div><div class="stat-icon stat-icon-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">₹85.4 Lakhs Funding</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Attached Fellows</div><div class="stat-value">4</div></div><div class="stat-icon stat-icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg></div></div><div class="stat-footer"><span class="badge badge-warning">1 Stipend Pending Review</span></div></div>
+          </div>
+        </div>
+
+        <!-- 2.2 Attendance Entry Grid (Interactive demo) -->
+        <div id="viewTeacherAttendanceEntry" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Student Attendance Registry</h1><p class="text-sm text-muted">Interactive live attendance checklist with instant calculation.</p></div>
+          </div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body" style="padding: 1rem 1.25rem;">
+              <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+                <div class="flex items-center gap-4">
+                  <div><span class="text-xs text-muted uppercase font-bold">Total:</span> <span class="font-bold text-main" id="totalStudentsCount">6</span></div>
+                  <div><span class="text-xs text-muted uppercase font-bold">Present:</span> <span class="font-bold text-success" id="presentStudentsCount">5</span></div>
+                  <div><span class="text-xs text-muted uppercase font-bold">Absent:</span> <span class="font-bold text-danger" id="absentStudentsCount">1</span></div>
+                  <div><span class="text-xs text-muted uppercase font-bold">Session Rate:</span> <span class="badge badge-success" id="attendancePercentageVal">83%</span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="btn btn-outline btn-sm" id="markAllPresentBtn">Mark All Present</button>
+                  <button type="button" class="btn btn-outline btn-sm text-danger" id="markAllAbsentBtn">Mark All Absent</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover" id="attendanceTable">
+                <thead><tr><th>Roll No</th><th>Student Name</th><th>Term Attendance</th><th style="text-align: center;">Status</th><th>Remarks</th></tr></thead>
+                <tbody>
+                  <tr class="student-row" data-roll-no="2026CS101" data-student-name="Aarav Sharma">
+                    <td><span class="table-code font-bold">2026CS101</span></td>
+                    <td><strong>Aarav Sharma</strong></td>
+                    <td><span class="badge badge-success">88.9%</span></td>
+                    <td style="text-align: center;">
+                      <label style="margin-right: 1rem;"><input type="radio" name="att_1" value="PRESENT" checked> <span class="text-success font-semibold">Present</span></label>
+                      <label><input type="radio" name="att_1" value="ABSENT"> <span class="text-danger font-semibold">Absent</span></label>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="Optional remark"></td>
+                  </tr>
+                  <tr class="student-row" data-roll-no="2026CS102" data-student-name="Ananya Desai">
+                    <td><span class="table-code font-bold">2026CS102</span></td>
+                    <td><strong>Ananya Desai</strong></td>
+                    <td><span class="badge badge-success">94.2%</span></td>
+                    <td style="text-align: center;">
+                      <label style="margin-right: 1rem;"><input type="radio" name="att_2" value="PRESENT" checked> <span class="text-success font-semibold">Present</span></label>
+                      <label><input type="radio" name="att_2" value="ABSENT"> <span class="text-danger font-semibold">Absent</span></label>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="Optional remark"></td>
+                  </tr>
+                  <tr class="student-row" data-roll-no="2026CS103" data-student-name="Devrat Singh">
+                    <td><span class="table-code font-bold">2026CS103</span></td>
+                    <td><strong>Devrat Singh</strong></td>
+                    <td><span class="badge badge-warning">68.5%</span></td>
+                    <td style="text-align: center;">
+                      <label style="margin-right: 1rem;"><input type="radio" name="att_3" value="PRESENT"> <span class="text-success font-semibold">Present</span></label>
+                      <label><input type="radio" name="att_3" value="ABSENT" checked> <span class="text-danger font-semibold">Absent</span></label>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" value="Medical excuse filed"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer"><button type="button" class="btn btn-primary" onclick="alert('Attendance committed to attendance_logs!')">Commit Session Attendance</button></div>
+          </div>
+        </div>
+
+        <!-- 2.3 Research Juniors & Stipend Approval -->
+        <div id="viewTeacherResearchJuniors" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Research Fellows &amp; Stipend Approvals</h1><p class="text-sm text-muted">Stage 1 of the 2-Stage Payment Architecture: PI approves fellowship release.</p></div>
+          </div>
+          <div class="card">
+            <div class="card-body p-0">
+              <table class="table table-hover">
+                <thead><tr><th>Fellow</th><th>Project</th><th>Billing Month</th><th>Amount</th><th>Milestone</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr style="background-color: #fffdf5;">
+                    <td><strong>Aarav Sharma</strong><div class="text-xs text-muted">JRF • Roll: 2026CS101</div></td>
+                    <td><span class="table-code">DST-SERB-0841</span></td>
+                    <td>October 2026</td>
+                    <td><strong class="text-success">₹31,000</strong></td>
+                    <td><span class="badge badge-success">Submitted</span></td>
+                    <td><span class="badge badge-warning">Pending PI Approval</span></td>
+                    <td><button type="button" class="btn btn-success btn-sm" onclick="alert('Stipend approved by PI! Routed to Office Accounts Queue.')">Approve Stipend</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Pooja Nair</strong><div class="text-xs text-muted">SRF • SCH-2024-12</div></td>
+                    <td><span class="table-code">DRDO-CARS-1102</span></td>
+                    <td>October 2026</td>
+                    <td>₹35,000</td>
+                    <td><span class="badge badge-success">Verified</span></td>
+                    <td><span class="badge badge-info">Approved by PI (Sent to Office)</span></td>
+                    <td><button type="button" class="btn btn-outline btn-sm" disabled>Approved &amp; Queued</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           ROLE VIEW 3: OFFICE STAFF VIEWS
+           ============================================================== -->
+      <div id="viewOfficeGroup" style="display: none;">
+        <div id="viewOfficeDashboard" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Accounts &amp; Operations Office</h1><p class="text-sm text-muted">Disbursements, tuition reconciliation, and facility schedules.</p></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Pending Stipends</div><div class="stat-value text-warning">₹1,03,000</div></div><div class="stat-icon stat-icon-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-footer"><span class="badge badge-warning">3 Claims Approved by PIs</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Pending Tuition</div><div class="stat-value text-danger">₹4,25,000</div></div><div class="stat-icon stat-icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-negative">12 Defaulters</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Lecture Hall Utilized</div><div class="stat-value">84.2%</div></div><div class="stat-icon stat-icon-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/></svg></div></div><div class="stat-footer"><span class="badge badge-success">0 Clashes</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Total Students</div><div class="stat-value">1,240</div></div><div class="stat-icon stat-icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">Fall 2026 Term</span></div></div>
+          </div>
+
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header bg-muted"><h2 class="card-title">Stage 2: Research Stipend Disbursement Queue</h2></div>
+            <div class="card-body p-0">
+              <table class="table table-hover">
+                <thead><tr><th>Fellow</th><th>PI Professor</th><th>Grant</th><th>Amount</th><th>Bank Destination</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Aarav Sharma</strong><div class="text-xs text-muted">JRF • Roll: 2026CS101</div></td>
+                    <td>Dr. K. Raman</td>
+                    <td><span class="table-code">DST-SERB-0841</span></td>
+                    <td><strong class="text-success">₹31,000</strong></td>
+                    <td><span class="text-mono">SBI ••••••••4892</span></td>
+                    <td><button type="button" class="btn btn-primary btn-sm" onclick="alert('Disbursement processed! UTR: SBIN-20261015-894129 generated and funds released.')">Process Disbursement</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Pooja Nair</strong><div class="text-xs text-muted">SRF • SCH-2024-12</div></td>
+                    <td>Dr. K. Raman</td>
+                    <td><span class="table-code">DRDO-CARS-1102</span></td>
+                    <td><strong class="text-success">₹35,000</strong></td>
+                    <td><span class="text-mono">HDFC ••••••••9102</span></td>
+                    <td><button type="button" class="btn btn-primary btn-sm" onclick="alert('Disbursement processed! UTR: HDFC-20261015-182947 generated and funds released.')">Process Disbursement</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           ROLE VIEW 4: ADMIN VIEWS (Database Console & Danger Zone)
+           ============================================================== -->
+      <div id="viewAdminGroup" style="display: none;">
+        <div id="viewAdminDashboard" class="view-page">
+          <div class="page-header">
+            <div><h1 class="page-header-title">Institutional Analytics &amp; DB Console</h1><p class="text-sm text-muted">MySQL 8.0 InnoDB storage telemetry, user directory, and radical safeguards.</p></div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Total Users</div><div class="stat-value">1,418</div></div><div class="stat-icon stat-icon-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">1,240 Students • 112 Faculty</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Research Grants</div><div class="stat-value text-success">₹4.82 Cr</div></div><div class="stat-icon stat-icon-success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/></svg></div></div><div class="stat-footer"><span class="stat-delta delta-positive">16 Active Grants</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">InnoDB Hit Rate</div><div class="stat-value text-primary">99.4%</div></div><div class="stat-icon stat-icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/></svg></div></div><div class="stat-footer"><span class="badge badge-success">InnoDB ACID Safe</span></div></div>
+            <div class="stat-card"><div class="stat-card-top"><div><div class="stat-label">Audit Logs</div><div class="stat-value">842</div></div><div class="stat-icon stat-icon-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div><div class="stat-footer"><span class="badge badge-info">Zero Breaches</span></div></div>
+          </div>
+
+          <!-- THE DANGER ZONE COMPONENT -->
+          <div class="danger-zone-card" style="margin-top: 2rem;">
+            <div class="danger-zone-header">
+              <div>
+                <div class="danger-zone-title">
+                  <div class="danger-icon-badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                  <span>THE DANGER ZONE &mdash; Radical Database Operations</span>
+                </div>
+                <p class="danger-zone-desc">Destructive database operations (dropping tables, truncating logs) require 3-tier validation (phrase match + password + 15-char audit reason).</p>
+              </div>
+            </div>
+            <div class="danger-zone-body">
+              <div class="danger-action-row">
+                <div class="danger-action-info">
+                  <div class="danger-action-title"><span>Drop Table <code>enrollments</code></span> <span class="badge badge-danger">Irreversible</span></div>
+                  <div class="danger-action-details">Drops all student course registrations and grade histories.</div>
+                </div>
+                <button type="button" class="btn btn-danger" data-danger-trigger data-action-type="DROP TABLE" data-target-entity="enrollments" data-challenge-phrase="DROP TABLE enrollments">Drop Table</button>
+              </div>
+              <div class="danger-action-row">
+                <div class="danger-action-info">
+                  <div class="danger-action-title"><span>Truncate Table <code>admin_audit_logs</code></span> <span class="badge badge-danger">Security Risk</span></div>
+                  <div class="danger-action-details">Empties all administrative accountability records.</div>
+                </div>
+                <button type="button" class="btn btn-danger" data-danger-trigger data-action-type="TRUNCATE TABLE" data-target-entity="admin_audit_logs" data-challenge-phrase="TRUNCATE TABLE admin_audit_logs">Truncate Table</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ======================================================================
+     DANGER ZONE SAFEGUARD MODAL (Interactive 3-Tier JS Challenge)
+     ====================================================================== -->
+<div class="modal" id="dangerZoneModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog modal-danger-dialog">
+    <div class="modal-danger-header">
+      <h3 class="modal-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Danger Zone: <span id="dangerModalActionTitle">DROP TABLE enrollments</span></span>
+      </h3>
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+    </div>
+
+    <form id="dangerActionForm" onsubmit="event.preventDefault(); alert('Radical operation executed successfully! Logged to admin_audit_logs.'); document.getElementById('dangerZoneModal').classList.remove('is-open');">
+      <input type="hidden" id="dangerActionType" value="DROP TABLE">
+      <input type="hidden" id="dangerTargetEntity" value="enrollments">
+
+      <div class="modal-body">
+        <div class="danger-callout">
+          <div class="danger-callout-title">IRREVERSIBLE DATA LOSS WARNING</div>
+          <div class="danger-callout-text">Raw DDL/DML will be issued to MySQL InnoDB. This action cannot be rolled back.</div>
+        </div>
+
+        <div class="challenge-steps">
+          <div class="challenge-step" id="dangerStep1">
+            <div class="step-label"><span class="step-number">1</span><span>Tier 1: Type the Exact Verification Phrase</span></div>
+            <div class="challenge-code-container">
+              <span class="challenge-code-text" id="challengePhraseDisplay">DROP TABLE enrollments</span>
+              <span class="text-xs text-muted">Exact match</span>
+            </div>
+            <input type="text" id="challengePhraseInput" class="form-control text-mono" placeholder="Type the phrase above to confirm..." autocomplete="off">
+            <div id="phraseMatchIndicator" class="challenge-match-indicator"><span class="match-pending">Waiting for exact input...</span></div>
+          </div>
+
+          <div class="challenge-step" id="dangerStep2">
+            <div class="step-label"><span class="step-number">2</span><span>Tier 2: Re-enter Administrator Password</span></div>
+            <input type="password" id="adminPasswordInput" class="form-control" placeholder="Enter admin password (min 4 chars)">
+          </div>
+
+          <div class="challenge-step" id="dangerStep3">
+            <div class="step-label"><span class="step-number">3</span><span>Tier 3: Justification for Immutable Audit Trail</span></div>
+            <textarea id="actionReasonInput" class="form-control" placeholder="Provide reason (min 15 characters)..." rows="2"></textarea>
+            <div id="reasonCharCounter" class="char-counter text-danger">0/15 characters (minimum 15 required)</div>
+          </div>
+        </div>
+
+        <div class="audit-disclaimer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Non-repudiation: Timestamp, user ID, IP, and reason will be appended to <code>admin_audit_logs</code>.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel &amp; Abort</button>
+        <button type="submit" id="executeRadicalBtn" class="btn btn-danger btn-execute-radical" disabled aria-disabled="true">
+          Execute Radical Action
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Core Scripts -->
+<script src="academic_portal/static/js/main.js"></script>
+<script src="academic_portal/static/js/attendance_grid.js"></script>
+<script src="academic_portal/static/js/danger_zone.js"></script>
+
+<script>
+  function switchRole(role) {
+    document.querySelectorAll('.role-switcher-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Hide all role groups
+    document.getElementById('navGroupStudent').style.display = 'none';
+    document.getElementById('navGroupTeacher').style.display = 'none';
+    document.getElementById('navGroupOffice').style.display = 'none';
+    document.getElementById('navGroupAdmin').style.display = 'none';
+
+    document.getElementById('viewStudentGroup').style.display = 'none';
+    document.getElementById('viewTeacherGroup').style.display = 'none';
+    document.getElementById('viewOfficeGroup').style.display = 'none';
+    document.getElementById('viewAdminGroup').style.display = 'none';
+
+    const pill = document.getElementById('topbarRolePill');
+    pill.className = `user-role-pill role-${role.toLowerCase()}`;
+    pill.textContent = role;
+
+    if (role === 'STUDENT') {
+      document.getElementById('navGroupStudent').style.display = 'block';
+      document.getElementById('viewStudentGroup').style.display = 'block';
+      showStudentPage('dashboard');
+      setUserProfile('Aarav Sharma', 'aarav.sharma@uni.edu', 'STUDENT', 'A');
+    } else if (role === 'TEACHER') {
+      document.getElementById('navGroupTeacher').style.display = 'block';
+      document.getElementById('viewTeacherGroup').style.display = 'block';
+      showTeacherPage('dashboard');
+      setUserProfile('Dr. K. Raman', 'k.raman@uni.edu', 'TEACHER', 'R');
+    } else if (role === 'OFFICE') {
+      document.getElementById('navGroupOffice').style.display = 'block';
+      document.getElementById('viewOfficeGroup').style.display = 'block';
+      showOfficePage('dashboard');
+      setUserProfile('Suresh Patil', 'suresh.patil@uni.edu', 'OFFICE', 'S');
+    } else if (role === 'ADMIN') {
+      document.getElementById('navGroupAdmin').style.display = 'block';
+      document.getElementById('viewAdminGroup').style.display = 'block';
+      showAdminPage('dashboard');
+      setUserProfile('Administrator Root', 'admin@uni.edu', 'ADMIN', 'A');
+    } else if (role === 'LOGIN') {
+      window.location.href = 'academic_portal/templates/accounts/login.html';
+    }
+  }
+
+  function setUserProfile(name, email, role, avatarLetter) {
+    document.getElementById('sidebarUserName').textContent = name;
+    document.getElementById('sidebarUserRole').textContent = role;
+    document.getElementById('sidebarAvatar').textContent = avatarLetter;
+    document.getElementById('topbarAvatar').textContent = avatarLetter;
+    document.getElementById('dropdownUserName').textContent = name;
+    document.getElementById('dropdownUserEmail').textContent = email;
+  }
+
+  function showStudentPage(pageId) {
+    document.querySelectorAll('#viewStudentGroup .view-page').forEach(p => p.classList.remove('active-view'));
+    document.querySelectorAll('.student-nav').forEach(l => l.classList.remove('active'));
+
+    if (pageId === 'dashboard') {
+      document.getElementById('viewStudentDashboard').classList.add('active-view');
+      document.getElementById('snav-dashboard').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Student / Dashboard';
+    } else if (pageId === 'courses') {
+      document.getElementById('viewStudentCourses').classList.add('active-view');
+      document.getElementById('snav-courses').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Student / Course Catalog';
+    } else if (pageId === 'attendance') {
+      document.getElementById('viewStudentAttendance').classList.add('active-view');
+      document.getElementById('snav-attendance').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Student / Attendance & Grades';
+    } else if (pageId === 'research') {
+      document.getElementById('viewStudentResearch').classList.add('active-view');
+      document.getElementById('snav-research').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Student / Research Role';
+    }
+  }
+
+  function showTeacherPage(pageId) {
+    document.querySelectorAll('#viewTeacherGroup .view-page').forEach(p => p.classList.remove('active-view'));
+    document.querySelectorAll('.teacher-nav').forEach(l => l.classList.remove('active'));
+
+    if (pageId === 'dashboard' || pageId === 'sections' || pageId === 'marks_entry' || pageId === 'research_projects' || pageId === 'publications') {
+      document.getElementById('viewTeacherDashboard').classList.add('active-view');
+      document.getElementById('tnav-dashboard').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Faculty / Overview';
+    } else if (pageId === 'attendance_entry') {
+      document.getElementById('viewTeacherAttendanceEntry').classList.add('active-view');
+      document.getElementById('tnav-attendance_entry').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Faculty / Attendance Entry Grid';
+    } else if (pageId === 'research_juniors') {
+      document.getElementById('viewTeacherResearchJuniors').classList.add('active-view');
+      document.getElementById('tnav-research_juniors').classList.add('active');
+      document.getElementById('topbarBreadcrumb').textContent = 'Faculty / Research Stipend Approval';
+    }
+  }
+
+  function showOfficePage(pageId) {
+    document.querySelectorAll('#viewOfficeGroup .view-page').forEach(p => p.classList.remove('active-view'));
+    document.querySelectorAll('.office-nav').forEach(l => l.classList.remove('active'));
+    document.getElementById('viewOfficeDashboard').classList.add('active-view');
+    document.getElementById('onav-dashboard').classList.add('active');
+    document.getElementById('topbarBreadcrumb').textContent = 'Office / Operations';
+  }
+
+  function showAdminPage(pageId) {
+    document.querySelectorAll('#viewAdminGroup .view-page').forEach(p => p.classList.remove('active-view'));
+    document.querySelectorAll('.admin-nav').forEach(l => l.classList.remove('active'));
+    document.getElementById('viewAdminDashboard').classList.add('active-view');
+    document.getElementById('anav-dashboard').classList.add('active');
+    document.getElementById('topbarBreadcrumb').textContent = 'Administrator / Database & Danger Zone';
+  }
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: academic-portal
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py seed_db && python manage.py collectstatic --no-input
+    startCommand: gunicorn academic_portal.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DB_ENGINE
+        value: sqlite
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"

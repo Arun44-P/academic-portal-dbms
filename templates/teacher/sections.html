@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Allocated Course Sections{% endblock %}
+{% block breadcrumb %}Course Sections &amp; Rosters{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Allocated Course Sections</h1>
+    <p class="text-sm text-muted">Manage your active lecture and laboratory sections for Fall 2026 semester.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'teacher:attendance_entry' %}" class="btn btn-primary btn-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Log Daily Attendance
+    </a>
+  </div>
+</div>
+
+<!-- Grid of Allocated Sections -->
+<div class="grid-3-col">
+  <!-- Section 1 -->
+  <div class="card card-hover">
+    <div class="card-header">
+      <div>
+        <span class="table-code font-bold">CS301</span>
+        <span class="badge badge-primary" style="margin-left: 0.5rem;">Section A</span>
+      </div>
+      <span class="badge badge-success">4 Credits</span>
+    </div>
+    <div class="card-body">
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Database Management Systems</h3>
+      <p class="text-sm text-muted">Core undergraduate curriculum covering relational algebra, BCNF normalization, and SQL transaction processing.</p>
+
+      <div style="margin: 1.25rem 0; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Enrolled Students:</span>
+          <span class="font-bold text-main">58 / 60 Capacity</span>
+        </div>
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-success" style="width: 96%;"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Schedule:</span>
+          <span class="font-semibold text-main">Mon, Wed 09:00 - 10:30 AM</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Room:</span>
+          <span class="table-code font-bold">LH-302 (Capacity 70)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'teacher:attendance_entry' %}" class="btn btn-primary btn-sm">Take Attendance</a>
+      <a href="{% url 'teacher:marks_entry' %}" class="btn btn-outline btn-sm">Enter Marks</a>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="card card-hover">
+    <div class="card-header">
+      <div>
+        <span class="table-code font-bold">CS311</span>
+        <span class="badge badge-primary" style="margin-left: 0.5rem;">Lab Batch 1</span>
+      </div>
+      <span class="badge badge-success">2 Credits</span>
+    </div>
+    <div class="card-body">
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Relational DBMS Laboratory</h3>
+      <p class="text-sm text-muted">Hands-on laboratory sessions in MySQL InnoDB, indexing benchmarks, stored procedures, and triggers.</p>
+
+      <div style="margin: 1.25rem 0; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Enrolled Students:</span>
+          <span class="font-bold text-main">30 / 30 Capacity (Full)</span>
+        </div>
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-success" style="width: 100%;"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Schedule:</span>
+          <span class="font-semibold text-main">Wed 02:00 - 05:00 PM</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Room:</span>
+          <span class="table-code font-bold">LAB-4 (35 Workstations)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'teacher:attendance_entry' %}" class="btn btn-primary btn-sm">Take Attendance</a>
+      <a href="{% url 'teacher:marks_entry' %}" class="btn btn-outline btn-sm">Enter Marks</a>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="card card-hover">
+    <div class="card-header">
+      <div>
+        <span class="table-code font-bold">CS420</span>
+        <span class="badge badge-primary" style="margin-left: 0.5rem;">Section A</span>
+      </div>
+      <span class="badge badge-success">4 Credits</span>
+    </div>
+    <div class="card-body">
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Distributed Systems Architecture</h3>
+      <p class="text-sm text-muted">Advanced elective examining consensus algorithms (Raft, Paxos), cloud partitioned stores, and replication.</p>
+
+      <div style="margin: 1.25rem 0; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Enrolled Students:</span>
+          <span class="font-bold text-main">54 / 60 Capacity</span>
+        </div>
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-success" style="width: 90%;"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Schedule:</span>
+          <span class="font-semibold text-main">Tue, Thu 02:00 - 03:30 PM</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-muted">Room:</span>
+          <span class="table-code font-bold">CS-201 (Capacity 65)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'teacher:attendance_entry' %}" class="btn btn-primary btn-sm">Take Attendance</a>
+      <a href="{% url 'teacher:marks_entry' %}" class="btn btn-outline btn-sm">Enter Marks</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

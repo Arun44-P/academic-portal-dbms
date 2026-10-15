@@ -5,44 +5,6 @@
 
 ---
 
-## 💬 Briefing Prompt for Teammate (Copy & Paste to Your Friend)
-
-> **Copy and send the message below to your teammate to get them up to speed instantly:**
->
-> ---
->
-> "Hey! Here is the complete context and architectural breakdown for our DBMS End-Semester Project (**Online Academic & Research Management Portal**).
-> 
-> ### 1. Tech Stack & Collaboration Split
-> - **Backend & DB**: Python (Django), MySQL (InnoDB), achieving Boyce-Codd Normal Form (BCNF).
-> - **Frontend & UI**: HTML5, CSS3, modern JavaScript, and Django Template Engine (`templates/` and `static/`).
-> - You will be driving the UI and frontend templates. All your tasks, phase-by-phase checklists, and component specs are laid out in `task.md`.
->
-> ### 2. The 4 User Roles & Views You Will Build
-> 1. **Student Portal**: Course registration catalog, semester timetable, attendance tracking with color alerts (<75% warning), grade cards, and research assistantship tracker.
-> 2. **Teacher (Faculty) Portal**:
->    - *Academic Wing*: Assigned course sections, lecture attendance logging grid, and assessment marks entry.
->    - *Research Wing*: Active research grants, research juniors roster (JRF/SRF/PhD), a **1-click monthly stipend approval table**, and publication submissions.
->    - *Faculty Specialization*: Teachers are categorized into **Permanent Faculty**, **Assistant Professors**, and **Visiting Professors** with different profile badges.
-> 3. **Office Staff Portal**: Admissions, room scheduling, and the **Research Office Stipend Queue** (where office staff clears and logs bank disbursement for stipends approved by professors).
-> 4. **Admin Portal**: Institute analytics, user directory, and the **Database Console & Danger Zone** (with a multi-step safeguard requiring typing the exact table name e.g. `DROP TABLE enrollments` + password re-entry + immutable logging before executing).
->
-> ### 3. Key Architectural Decisions to Keep in Mind
-> - **Table-per-Type (TPT) for Users**: One central login table (`user_accounts`), but distinct profile tables for Students, Teachers, Staff, and Admins to eliminate NULL anomalies.
-> - **Separation of Duties in Stipends**: Professors approve research work $\to$ Office staff executes financial disbursement.
-> - **Offerings vs Courses**: Courses are abstract; students enroll in semester sections (`course_offerings`).
->
-> ### 4. Essential Reference Files in the Repo
-> - `task.md`: Your complete step-by-step frontend roadmap, page specs, and Django integration tips.
-> - `Architectural_Decisions_and_Why_We_Have_Taken_Them.md`: Explains every single database and architectural decision we made and why.
-> - `schema.sql`: The fully normalized, production-grade MySQL schema with all tables, constraints, and views.
->
-> Check out `task.md` and let's start with Phase 1 (Base layout, design tokens, and the unified login page)!"
->
-> ---
-
----
-
 ## 1. Project Overview & Architecture
 
 This project is a multi-role college academic portal. The backend is powered by **Django** connected to a **MySQL** database. Your goal is to build a responsive, modern, and accessible frontend using HTML, CSS, and vanilla JS (or CSS utilities) that integrates seamlessly with Django templates (`templates/` and `static/`).

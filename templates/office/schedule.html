@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Master Class Schedule &amp; Room Allocations{% endblock %}
+{% block breadcrumb %}Office Staff / Room Scheduling{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Master Lecture Hall &amp; Room Scheduling</h1>
+    <p class="text-sm text-muted">Weekly timetable grid, classroom occupancy metrics, and automated clash detection.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-primary btn-sm" data-modal-target="#allocateRoomModal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Allocate Room Slot
+    </button>
+  </div>
+</div>
+
+<!-- Schedule Health Indicator -->
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="card-body" style="padding: 1rem 1.25rem;">
+    <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+      <div class="flex items-center gap-3">
+        <span class="badge badge-success" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+          <span class="badge-dot"></span>
+          Clash-Free Schedule Verified
+        </span>
+        <span class="text-sm text-muted">No spatial or temporal overlaps across 24 classrooms.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <label for="dayFilter" class="text-xs text-muted font-bold uppercase">Filter Day:</label>
+        <select id="dayFilter" class="form-select form-select-sm" style="width: auto;">
+          <option value="MONDAY" selected>Monday Schedule</option>
+          <option value="TUESDAY">Tuesday Schedule</option>
+          <option value="WEDNESDAY">Wednesday Schedule</option>
+          <option value="THURSDAY">Thursday Schedule</option>
+          <option value="FRIDAY">Friday Schedule</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Timetable Allocation Grid Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Room Occupancy Grid — Monday
+    </h2>
+    <span class="text-xs text-muted">Time slots: 09:00 AM – 05:00 PM</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr style="text-align: center;">
+            <th style="width: 140px; text-align: left;">Room / Hall</th>
+            <th>09:00 - 10:30 AM</th>
+            <th>10:45 - 12:15 PM</th>
+            <th>01:30 - 03:00 PM</th>
+            <th>03:15 - 04:45 PM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- LH-302 -->
+          <tr>
+            <td style="background-color: var(--bg-surface-alt);">
+              <div class="font-bold">LH-302</div>
+              <div class="text-xs text-muted">Capacity: 70 • AC</div>
+            </td>
+            <td>
+              <div style="background-color: #eff6ff; border-left: 3px solid #2563eb; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold text-primary">CS301 (Sec A)</div>
+                <div class="text-xs text-muted">DBMS • Dr. K. Raman</div>
+                <div class="text-xs font-semibold">58 / 70 Enrolled</div>
+              </div>
+            </td>
+            <td>
+              <div style="background-color: #f0fdf4; border-left: 3px solid #10b981; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold text-success">CS304 (Sec A)</div>
+                <div class="text-xs text-muted">OS Design • Dr. Sunita V.</div>
+                <div class="text-xs font-semibold">52 / 70 Enrolled</div>
+              </div>
+            </td>
+            <td style="text-align: center; color: var(--text-light); font-style: italic;">
+              Available Slot
+            </td>
+            <td>
+              <div style="background-color: #f5f3ff; border-left: 3px solid #8b5cf6; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold" style="color: #6d28d9;">CS420 (Sec A)</div>
+                <div class="text-xs text-muted">Distributed Sys • Dr. K. Raman</div>
+                <div class="text-xs font-semibold">54 / 70 Enrolled</div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- CS-104 -->
+          <tr>
+            <td style="background-color: var(--bg-surface-alt);">
+              <div class="font-bold">CS-104</div>
+              <div class="text-xs text-muted">Capacity: 60 • Projector</div>
+            </td>
+            <td style="text-align: center; color: var(--text-light); font-style: italic;">
+              Available Slot
+            </td>
+            <td>
+              <div style="background-color: #eff6ff; border-left: 3px solid #2563eb; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold text-primary">CS308 (Sec B)</div>
+                <div class="text-xs text-muted">Networks • Prof. Alok Gupta</div>
+                <div class="text-xs font-semibold">46 / 60 Enrolled</div>
+              </div>
+            </td>
+            <td>
+              <div style="background-color: #fef3c7; border-left: 3px solid #f59e0b; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold text-warning">CS201 (Sec A)</div>
+                <div class="text-xs text-muted">Data Structures • Prof. Nair</div>
+                <div class="text-xs font-semibold">55 / 60 Enrolled</div>
+              </div>
+            </td>
+            <td style="text-align: center; color: var(--text-light); font-style: italic;">
+              Available Slot
+            </td>
+          </tr>
+
+          <!-- LAB-4 -->
+          <tr>
+            <td style="background-color: var(--bg-surface-alt);">
+              <div class="font-bold">LAB-4</div>
+              <div class="text-xs text-muted">Capacity: 35 PCs</div>
+            </td>
+            <td style="text-align: center; color: var(--text-light); font-style: italic;">
+              Maintenance &amp; Setup
+            </td>
+            <td style="text-align: center; color: var(--text-light); font-style: italic;">
+              Available Slot
+            </td>
+            <td colspan="2">
+              <div style="background-color: #eff6ff; border-left: 3px solid #2563eb; padding: 0.5rem; border-radius: var(--radius-xs);">
+                <div class="font-bold text-primary">CS311: DBMS Laboratory (Batch 1 &amp; 2)</div>
+                <div class="text-xs text-muted">Prof. M. Verma &amp; Teaching Assistants • 3 Hour Hands-on Block</div>
+                <div class="text-xs font-semibold">30 / 35 Workstations Used</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Allocate Room Modal -->
+<div class="modal" id="allocateRoomModal" role="dialog" aria-modal="true" aria-labelledby="allocModalTitle" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title" id="allocModalTitle">Allocate Room / Classroom Slot</h3>
+      <button type="button" class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
+    </div>
+    <form method="POST" action="{% url 'office:schedule' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="courseSelect" class="form-label required">Course Section</label>
+          <select name="offering_id" id="courseSelect" class="form-select" required>
+            <option value="101">CS301: DBMS (Section A) - 58 Students</option>
+            <option value="102">CS304: OS Design (Section B) - 50 Students</option>
+            <option value="103">CS482: Graph Theory (Section A) - 22 Students</option>
+          </select>
+        </div>
+
+        <div class="grid-2-col" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="roomSelect" class="form-label required">Room</label>
+            <select name="room_id" id="roomSelect" class="form-select" required>
+              <option value="LH-302">LH-302 (Capacity 70)</option>
+              <option value="CS-104">CS-104 (Capacity 60)</option>
+              <option value="LAB-4">LAB-4 (Capacity 35)</option>
+              <option value="AUD-1">Auditorium (Capacity 250)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="daySelect" class="form-label required">Day of Week</label>
+            <select name="day_of_week" id="daySelect" class="form-select" required>
+              <option value="MON">Monday</option>
+              <option value="TUE">Tuesday</option>
+              <option value="WED">Wednesday</option>
+              <option value="THU">Thursday</option>
+              <option value="FRI">Friday</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2-col" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="startTime" class="form-label required">Start Time</label>
+            <input type="time" name="start_time" id="startTime" class="form-control" value="09:00" required>
+          </div>
+          <div class="form-group">
+            <label for="endTime" class="form-label required">End Time</label>
+            <input type="time" name="end_time" id="endTime" class="form-control" value="10:30" required>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary">Check Clashes &amp; Reserve</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

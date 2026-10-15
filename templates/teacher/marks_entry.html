@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assessment &amp; Marks Entry{% endblock %}
+{% block breadcrumb %}Assessment Matrix &amp; Grades{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Curricular Assessment &amp; Marks Entry</h1>
+    <p class="text-sm text-muted">Input marks for quizzes, midterm, and endterm exams with automated client-side maximum bound validation.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'teacher:sections' %}" class="btn btn-outline btn-sm">Back to Sections</a>
+  </div>
+</div>
+
+<form method="POST" action="{% url 'teacher:marks_entry' %}" id="marksEntryForm">
+  {% csrf_token %}
+
+  <!-- Section Selector & Assessment Policy Banner -->
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header bg-muted">
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Course Section &amp; Component Maximum Weights
+      </h2>
+    </div>
+    <div class="card-body">
+      <div class="grid-2-col" style="margin-bottom: 0;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="sectionSelect" class="form-label required">Course Section</label>
+          <select name="offering_id" id="sectionSelect" class="form-select">
+            <option value="101" selected>CS301: Database Management Systems (Section A)</option>
+            <option value="102">CS311: Relational DBMS Lab (Batch 1)</option>
+            <option value="103">CS420: Distributed Systems (Section A)</option>
+          </select>
+        </div>
+        <div style="background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 0.75rem 1rem; border: 1px solid var(--border-light);">
+          <div class="text-xs text-muted uppercase font-bold" style="margin-bottom: 0.25rem;">Weight Distribution (100 Total)</div>
+          <div class="flex items-center gap-3 text-sm">
+            <span>Quiz 1: <strong>10 pts</strong></span>
+            <span>•</span>
+            <span>Quiz 2: <strong>10 pts</strong></span>
+            <span>•</span>
+            <span>Mid-Term: <strong>30 pts</strong></span>
+            <span>•</span>
+            <span>End-Term: <strong>50 pts</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marks Entry Matrix Table -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Student Evaluation Matrix</h2>
+      <div id="validationStatusBadge">
+        <span class="badge badge-success">All inputs valid</span>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover" id="marksMatrixTable">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Roll Number</th>
+              <th>Student Name</th>
+              <th style="width: 130px;">Quiz 1 (Max 10)</th>
+              <th style="width: 130px;">Quiz 2 (Max 10)</th>
+              <th style="width: 140px;">Mid-Term (Max 30)</th>
+              <th style="width: 140px;">End-Term (Max 50)</th>
+              <th style="width: 110px;">Total (100)</th>
+              <th style="width: 130px;">Projected Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="marks-row">
+              <td><span class="table-code font-bold">2026CS101</span></td>
+              <td>
+                <div class="font-bold">Aarav Sharma</div>
+                <div class="text-xs text-muted">B.Tech CSE</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS101" value="9.5" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS101" value="8.5" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS101" value="27.5" class="form-control mark-input" data-max="30" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS101" value="44.0" class="form-control mark-input" data-max="50" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
+              </td>
+              <td><strong class="total-score text-primary">89.5</strong></td>
+              <td><span class="badge badge-success grade-badge">A</span></td>
+            </tr>
+
+            <tr class="marks-row">
+              <td><span class="table-code font-bold">2026CS102</span></td>
+              <td>
+                <div class="font-bold">Ananya Desai</div>
+                <div class="text-xs text-muted">B.Tech CSE</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS102" value="10.0" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS102" value="9.5" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS102" value="29.0" class="form-control mark-input" data-max="30" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS102" value="48.0" class="form-control mark-input" data-max="50" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
+              </td>
+              <td><strong class="total-score text-primary">96.5</strong></td>
+              <td><span class="badge badge-success grade-badge">A+</span></td>
+            </tr>
+
+            <tr class="marks-row">
+              <td><span class="table-code font-bold">2026CS103</span></td>
+              <td>
+                <div class="font-bold">Devrat Singh</div>
+                <div class="text-xs text-muted">B.Tech CSE</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS103" value="7.0" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS103" value="6.5" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS103" value="20.0" class="form-control mark-input" data-max="30" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS103" value="32.0" class="form-control mark-input" data-max="50" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
+              </td>
+              <td><strong class="total-score text-primary">65.5</strong></td>
+              <td><span class="badge badge-warning grade-badge">B</span></td>
+            </tr>
+
+            <tr class="marks-row">
+              <td><span class="table-code font-bold">2026CS104</span></td>
+              <td>
+                <div class="font-bold">Ishaan Kapoor</div>
+                <div class="text-xs text-muted">B.Tech CSE</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS104" value="5.0" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS104" value="5.5" class="form-control mark-input" data-max="10" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS104" value="14.0" class="form-control mark-input" data-max="30" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
+              </td>
+              <td>
+                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS104" value="22.5" class="form-control mark-input" data-max="50" required>
+                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
+              </td>
+              <td><strong class="total-score text-danger">47.0</strong></td>
+              <td><span class="badge badge-danger grade-badge">C</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="flex items-center justify-between w-full">
+        <span class="text-xs text-muted">Finalized grades calculate GPA rankings and update transcripts.</span>
+        <div class="flex items-center gap-2">
+          <button type="submit" name="save_draft" value="true" class="btn btn-outline">
+            Save Draft
+          </button>
+          <button type="submit" name="finalize" value="true" id="submitGradesBtn" class="btn btn-primary">
+            Finalize &amp; Submit Grades
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('marksMatrixTable');
+    const submitBtn = document.getElementById('submitGradesBtn');
+    const statusBadge = document.getElementById('validationStatusBadge');
+
+    function calculateRow(row) {
+      const inputs = row.querySelectorAll('.mark-input');
+      let total = 0;
+      let hasError = false;
+
+      inputs.forEach(input => {
+        const val = parseFloat(input.value) || 0;
+        const max = parseFloat(input.getAttribute('data-max')) || 100;
+        const errHint = input.parentElement.querySelector('.error-hint');
+
+        if (val > max || val < 0) {
+          input.classList.add('is-invalid');
+          input.style.borderColor = 'var(--color-danger)';
+          if (errHint) errHint.style.display = 'block';
+          hasError = true;
+        } else {
+          input.classList.remove('is-invalid');
+          input.style.borderColor = '';
+          if (errHint) errHint.style.display = 'none';
+          total += val;
+        }
+      });
+
+      const totalEl = row.querySelector('.total-score');
+      const gradeBadge = row.querySelector('.grade-badge');
+      if (totalEl) totalEl.textContent = total.toFixed(1);
+
+      // Determine projected grade
+      let grade = 'F';
+      let badgeClass = 'badge-danger';
+      if (total >= 90) { grade = 'A+'; badgeClass = 'badge-success'; }
+      else if (total >= 80) { grade = 'A'; badgeClass = 'badge-success'; }
+      else if (total >= 70) { grade = 'B+'; badgeClass = 'badge-info'; }
+      else if (total >= 60) { grade = 'B'; badgeClass = 'badge-warning'; }
+      else if (total >= 50) { grade = 'C'; badgeClass = 'badge-warning'; }
+
+      if (gradeBadge) {
+        gradeBadge.textContent = grade;
+        gradeBadge.className = `badge ${badgeClass} grade-badge`;
+      }
+
+      return !hasError;
+    }
+
+    function validateAll() {
+      const rows = table.querySelectorAll('tbody tr.marks-row');
+      let allValid = true;
+      rows.forEach(row => {
+        const valid = calculateRow(row);
+        if (!valid) allValid = false;
+      });
+
+      if (allValid) {
+        submitBtn.removeAttribute('disabled');
+        statusBadge.innerHTML = '<span class="badge badge-success">All inputs valid</span>';
+      } else {
+        submitBtn.setAttribute('disabled', 'true');
+        statusBadge.innerHTML = '<span class="badge badge-danger">Errors detected (exceeds max marks)</span>';
+      }
+    }
+
+    table.querySelectorAll('.mark-input').forEach(input => {
+      input.addEventListener('input', validateAll);
+    });
+
+    validateAll();
+  });
+</script>
+{% endblock %}
+

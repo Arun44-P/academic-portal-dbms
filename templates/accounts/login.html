@@ -1,56 +1,192 @@
-{% extends "base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Sign In | ACADEMIA Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <style>
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      padding: 1.5rem;
+      position: relative;
+    }
 
-{% block title %}Sign In{% endblock %}
+    .login-box {
+      width: 100%;
+      max-width: 460px;
+      background-color: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      padding: 2.25rem 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-{% block content %}
-<div style="max-width: 440px; margin: 40px auto;">
-    <div class="card" style="box-shadow: var(--shadow-md);">
-        <div class="card-header" style="text-align: center; display: block; padding: 28px 24px 20px;">
-            <div style="font-size: 2.5rem; margin-bottom: 8px;">🏛️</div>
-            <h1 style="font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);">College Academic Portal</h1>
-            <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">Sign in with your role-assigned credentials</p>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{% url 'accounts:login' %}">
-                {% csrf_token %}
-                <div style="margin-bottom: 18px;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Username / Roll No / Employee ID</label>
-                    <input type="text" name="username" id="usernameInput" required 
-                           style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem;" 
-                           placeholder="e.g. admin or dr_sharma">
-                </div>
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">Password</label>
-                    <input type="password" name="password" id="passwordInput" required 
-                           style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem;" 
-                           placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem;">
-                    Sign In to Portal
-                </button>
-            </form>
+    .login-brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
 
-            <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);">
-                <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.05em;">
-                    ⚡ Quick Login Demo Profiles (Click to fill)
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('admin', 'admin123')">🔑 Admin</button>
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('dr_sharma', 'pass123')">👨‍🏫 Permanent Prof (PI)</button>
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('prof_neha', 'pass123')">👩‍🏫 Assistant Prof</button>
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('prof_alok', 'pass123')">🌐 Visiting Prof</button>
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('staff_sunita', 'pass123')">💼 Office Staff</button>
-                    <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 8px;" onclick="fillLogin('student_arjun', 'pass123')">🎓 Student</button>
-                </div>
-            </div>
-        </div>
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--color-primary-600), #1d4ed8);
+      color: #ffffff;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .login-brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .login-brand-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .role-hint-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed var(--border-medium);
+    }
+
+    .role-chip {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-full);
+      background-color: var(--bg-surface-alt);
+      color: var(--text-body);
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      transition: all var(--transition-fast);
+    }
+
+    .role-chip:hover {
+      background-color: var(--color-primary-50);
+      color: var(--color-primary-600);
+      border-color: var(--color-primary-100);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 1.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-box">
+    <!-- Branding Header -->
+    <div class="login-brand-header">
+      <div class="login-logo" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <h1 class="login-brand-title">Academic &amp; Research Portal</h1>
+      <p class="login-brand-desc">Online Multi-Role Academic Management System</p>
     </div>
+
+    <!-- Quick Role Pill Selector / Evaluator Fast-Fill Hints -->
+    <div class="role-hint-chips" title="Click to auto-populate test credentials">
+      <span class="role-chip" onclick="fillCredential('student_arjun', 'pass123')">🎓 Student (student_arjun)</span>
+      <span class="role-chip" onclick="fillCredential('dr_sharma', 'pass123')">👨‍🏫 Faculty (dr_sharma)</span>
+      <span class="role-chip" onclick="fillCredential('staff_sunita', 'pass123')">🏢 Staff (staff_sunita)</span>
+      <span class="role-chip" onclick="fillCredential('admin', 'admin123')">🛡️ Admin (admin)</span>
+    </div>
+
+    <!-- Django Flash Messages -->
+    {% if messages %}
+      <div class="messages-container" aria-live="polite">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'danger' }} alert-dismissible" role="alert">
+            <div class="alert-content">{{ message }}</div>
+            <button type="button" class="alert-close" aria-label="Close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Login Form -->
+    <form method="POST" action="{% url 'accounts:login' %}" id="loginForm" novalidate>
+      {% csrf_token %}
+
+      <!-- Identifier Input (Floating Label) -->
+      <div class="form-floating">
+        <input type="text" name="username" id="usernameInput" class="form-control" placeholder="Roll No / Employee ID / Username" required autofocus>
+        <label for="usernameInput">Roll Number / Employee ID / Username</label>
+      </div>
+
+      <!-- Password Input (Floating Label) -->
+      <div class="form-floating">
+        <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Password" required>
+        <label for="passwordInput">Secret Password</label>
+      </div>
+
+      <div class="flex items-center justify-between" style="margin-bottom: 1.25rem;">
+        <label class="form-check" style="margin-bottom: 0;">
+          <input type="checkbox" name="remember_me" class="form-check-input">
+          <span class="form-check-label">Remember session</span>
+        </label>
+        <a href="#" class="text-sm">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full btn-lg">
+        <span>Authenticate &amp; Enter Portal</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>Secure Enterprise DBMS &amp; Institutional Governance System</p>
+      <p class="text-xs text-muted" style="margin-top: 0.35rem;">MySQL 8.0 ACID Compliant • BCNF Normalized Schema</p>
+    </div>
+  </div>
 </div>
 
+<script src="{% static 'js/main.js' %}"></script>
 <script>
-    function fillLogin(user, pass) {
-        document.getElementById('usernameInput').value = user;
-        document.getElementById('passwordInput').value = pass;
+  function fillCredential(identifier, password) {
+    const userField = document.getElementById('usernameInput');
+    const passField = document.getElementById('passwordInput');
+    if (userField) {
+      userField.value = identifier;
+      userField.focus();
     }
+    if (passField) {
+      passField.value = password;
+    }
+  }
 </script>
-{% endblock %}
+</body>
+</html>
+

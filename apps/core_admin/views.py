@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import connection
@@ -59,8 +59,12 @@ def database_console(request):
     # Get list of tables and counts using raw DB cursor
     tables_info = []
     with connection.cursor() as cursor:
-        cursor.execute("SHOW TABLES;")
-        tables = [row[0] for row in cursor.fetchall()]
+        if connection.vendor == 'sqlite':
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+            tables = [row[0] for row in cursor.fetchall()]
+        else:
+            cursor.execute("SHOW TABLES;")
+            tables = [row[0] for row in cursor.fetchall()]
         for tbl in tables:
             try:
                 cursor.execute(f"SELECT COUNT(*) FROM `{tbl}`;")
@@ -88,16 +92,21 @@ def execute_radical_action(request):
         target_entity = request.POST.get('target_entity', '').strip()
         confirmation_text = request.POST.get('confirmation_text', '').strip()
         admin_password = request.POST.get('admin_password', '').strip()
-        justification = request.POST.get('justification_reason', '').strip()
+        justification = request.POST.get('justification_reason', '').strip() or request.POST.get('justification', '').strip()
         client_ip = get_client_ip(request)
 
+        normalized_action = action_type.replace(' ', '_').upper()
+        if normalized_action == 'PURGE':
+            normalized_action = 'BULK_DELETE'
+
         expected_confirmation = f"{action_type} {target_entity}".upper()
+        alt_expected = f"{normalized_action} {target_entity}".upper()
 
         # Tier 1: Challenge confirmation text match
-        if confirmation_text.strip().upper() != expected_confirmation:
+        if confirmation_text.strip().upper() not in (expected_confirmation, alt_expected):
             AdminAuditLog.objects.create(
                 admin=request.user.admin_profile,
-                action_type=action_type,
+                action_type=normalized_action if normalized_action in dict(AdminAuditLog.ACTION_CHOICES) else 'RAW_SQL_EXECUTE',
                 target_entity=target_entity,
                 query_or_command=f"Attempted: {action_type} on {target_entity}",
                 justification_reason=justification or "N/A",
@@ -118,12 +127,18 @@ def execute_radical_action(request):
         # Tier 3: Execute and Log to Immutable Admin Audit Log
         try:
             with connection.cursor() as cursor:
-                if action_type == 'DROP_TABLE':
+                if normalized_action == 'DROP_TABLE':
                     sql_cmd = f"DROP TABLE IF EXISTS `{target_entity}`;"
-                elif action_type == 'TRUNCATE_TABLE':
-                    sql_cmd = f"TRUNCATE TABLE `{target_entity}`;"
-                elif action_type == 'BULK_DELETE':
-                    sql_cmd = f"DELETE FROM `{target_entity}`; "
+                elif normalized_action == 'TRUNCATE_TABLE':
+                    if connection.vendor == 'sqlite':
+                        sql_cmd = f"DELETE FROM `{target_entity}`;"
+                    else:
+                        sql_cmd = f"TRUNCATE TABLE `{target_entity}`;"
+                elif normalized_action == 'BULK_DELETE':
+                    if target_entity.upper() in ('INACTIVE_USERS', 'USER_ACCOUNTS'):
+                        sql_cmd = "DELETE FROM accounts_useraccount WHERE is_active = 0;"
+                    else:
+                        sql_cmd = f"DELETE FROM `{target_entity}`;"
                 else:
                     sql_cmd = "SELECT 1;"
 
@@ -131,7 +146,7 @@ def execute_radical_action(request):
 
             AdminAuditLog.objects.create(
                 admin=request.user.admin_profile,
-                action_type=action_type,
+                action_type=normalized_action if normalized_action in dict(AdminAuditLog.ACTION_CHOICES) else 'RAW_SQL_EXECUTE',
                 target_entity=target_entity,
                 query_or_command=sql_cmd,
                 justification_reason=justification,
@@ -143,7 +158,7 @@ def execute_radical_action(request):
         except Exception as e:
             AdminAuditLog.objects.create(
                 admin=request.user.admin_profile,
-                action_type=action_type,
+                action_type=normalized_action if normalized_action in dict(AdminAuditLog.ACTION_CHOICES) else 'RAW_SQL_EXECUTE',
                 target_entity=target_entity,
                 query_or_command=f"FAILED: {action_type} {target_entity} - {str(e)}",
                 justification_reason=justification,
@@ -189,3 +204,15 @@ def toggle_user_status(request, user_id):
     status_str = "activated" if target_user.is_active else "deactivated"
     messages.success(request, f"User {target_user.username} has been {status_str}.")
     return redirect('core_admin:user_directory')
+
+
+@login_required
+def audit_logs(request):
+    if request.user.role != 'ADMIN':
+        messages.error(request, "Access restricted to Administrators.")
+        return redirect('accounts:role_dispatch')
+
+    logs = AdminAuditLog.objects.select_related('admin__user').order_by('-created_at')
+    return render(request, 'admin/audit_logs.html', {
+        'logs': logs,
+    })
