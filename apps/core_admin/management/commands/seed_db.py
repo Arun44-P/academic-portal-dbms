@@ -309,6 +309,7 @@ class Command(BaseCommand):
                 "role": "OFFICE_STAFF",
             },
         )
+        u_staff.is_active = True
         u_staff.set_password("pass123")
         u_staff.save()
 

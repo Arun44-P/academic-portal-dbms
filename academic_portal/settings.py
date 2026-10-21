@@ -6,6 +6,7 @@ DBMS End-Semester Project: Online Academic & Research Management Portal.
 from pathlib import Path
 import os
 import sys
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,7 +14,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-academic-portal-dbms-secret-key-change-in-prod')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+
 ALLOWED_HOSTS = ['*']
+if os.environ.get('ALLOWED_HOSTS'):
+    ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS').split(',') if h.strip()]
+
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
     'https://*.up.railway.app',
@@ -21,6 +26,15 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
+
+render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_external_hostname:
+    if render_external_hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_external_hostname)
+    CSRF_TRUSTED_ORIGINS.append(f'https://{render_external_hostname}')
+
+# HTTPS Reverse Proxy Configuration
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 INSTALLED_APPS = [
@@ -71,14 +85,37 @@ WSGI_APPLICATION = 'academic_portal.wsgi.application'
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.UserAccount'
 
-# Database Configuration (SQLite default for seamless out-of-box execution; MySQL supported via DB_ENGINE=mysql)
-DB_ENGINE = os.environ.get('DB_ENGINE', 'sqlite').lower()
+# Database Configuration
+# Supports:
+# 1. DATABASE_URL (for hosted cloud SQL like TiDB, Aiven, Supabase, Neon)
+# 2. DB_ENGINE=mysql with discrete DB_HOST, DB_USER, etc.
+# 3. Default fallback to local SQLite for seamless offline testing
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DB_ENGINE = os.environ.get('DB_ENGINE', '').lower()
 
-if DB_ENGINE == 'mysql':
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+    # MySQL specific connection options
+    if 'mysql' in DATABASES['default'].get('ENGINE', ''):
+        DATABASES['default'].setdefault('OPTIONS', {})
+        DATABASES['default']['OPTIONS'].setdefault('charset', 'utf8mb4')
+        DATABASES['default']['OPTIONS'].setdefault('init_command', "SET sql_mode='STRICT_TRANS_TABLES'")
+        if os.environ.get('DB_SSL', '').lower() in ('true', '1', 'required'):
+            DATABASES['default']['OPTIONS']['ssl'] = {'ssl_mode': 'REQUIRED'}
+
+elif DB_ENGINE == 'mysql':
     db_options = {
         'charset': 'utf8mb4',
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
     }
+    if os.environ.get('DB_SSL', '').lower() in ('true', '1', 'required'):
+        db_options['ssl'] = {'ssl_mode': 'REQUIRED'}
     local_socket = BASE_DIR / 'mysql_data' / 'mysql.sock'
     if local_socket.exists():
         db_options['unix_socket'] = str(local_socket)
@@ -92,6 +129,17 @@ if DB_ENGINE == 'mysql':
             'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
             'PORT': os.environ.get('DB_PORT', '3306'),
             'OPTIONS': db_options,
+        }
+    }
+elif DB_ENGINE in ('postgres', 'postgresql'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'academic_portal_db'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 else:
