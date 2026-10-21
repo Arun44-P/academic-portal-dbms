@@ -8,7 +8,7 @@
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Institute Analytics &amp; System Health</h1>
-    <p class="text-sm text-muted">Administrative oversight: user provisioning, 3-tier faculty distribution, research grant pools, and MySQL database engine telemetry.</p>
+    <p class="text-sm text-muted">Administrative oversight: user provisioning, 3-tier faculty distribution, curriculum management, and MySQL database engine telemetry.</p>
   </div>
   <div class="page-header-actions">
     <a href="{% url 'core_admin:database_console' %}" class="btn btn-outline btn-sm text-danger font-semibold">
@@ -40,13 +40,22 @@
     </div>
   </div>
 
-  <!-- Total Research Funding Active -->
+  <!-- Total Course Offerings Active -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Active Research Funding</div>
-        <div class="stat-value text-success">₹4.82 Cr</div>
+        <div class="stat-label">Active Course Curricula</div>
+        <div class="stat-value text-success">8 Courses • 24 Sections</div>
       </div>
+      <div class="stat-icon stat-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">Autumn 2026-27</span>
+      <span class="text-muted">UG &amp; PG Modules</span>
+    </div>
+  </div>
       <div class="stat-icon stat-icon-success">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>

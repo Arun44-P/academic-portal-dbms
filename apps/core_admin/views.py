@@ -12,7 +12,7 @@ from apps.accounts.models import (
     AssistantProfessor,
     VisitingProfessor,
 )
-from apps.research.models import ResearchProject
+from apps.academics.models import Course, CourseOffering
 from apps.core_admin.models import AdminAuditLog
 
 
@@ -38,8 +38,8 @@ def admin_dashboard(request):
         'permanent_count': PermanentFaculty.objects.count(),
         'assistant_count': AssistantProfessor.objects.count(),
         'visiting_count': VisitingProfessor.objects.count(),
-        'active_projects': ResearchProject.objects.filter(status='ACTIVE').count(),
-        'total_grants': ResearchProject.objects.aggregate(total=Sum('total_grant_amount'))['total'] or 0,
+        'total_courses': Course.objects.count(),
+        'active_offerings': CourseOffering.objects.count(),
     }
 
     recent_logs = AdminAuditLog.objects.select_related('admin__user').order_by('-created_at')[:10]

@@ -8,25 +8,29 @@
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Academic Administration &amp; Accounts Dashboard</h1>
-    <p class="text-sm text-muted">Operations management: fee collection, research stipend disbursements, room scheduling, and registration clearance.</p>
+    <p class="text-sm text-muted">Operations management: fee collection, room scheduling, student records, and registration clearance.</p>
   </div>
-  <div class="page-header-actions">
-    <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Open Stipend Queue
-    </a>
-  </div>
+  
 </div>
 
 <!-- 4 Key Office Metrics -->
 <div class="stats-grid">
-  <!-- Metric 1: Pending Stipend Clearances -->
+  <!-- Metric 1: Academic Programs -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Stipends in Accounts Queue</div>
-        <div class="stat-value text-warning">₹1,03,000</div>
+        <div class="stat-label">Academic Departments &amp; Programs</div>
+        <div class="stat-value text-primary">3 Depts • 2 Programs</div>
       </div>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge badge-success">CSE, IT &amp; ECE</span>
+      <span class="text-muted">B.Tech Degrees</span>
+    </div>
+  </div>
       <div class="stat-icon stat-icon-warning">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
@@ -91,59 +95,62 @@
 
 <!-- Two-Column Operations Layout -->
 <div class="grid-2-col">
-  <!-- Urgent Stipend Disbursement Action Summary -->
+  <!-- Academic Course Offerings Summary -->
   <div class="card">
     <div class="card-header">
       <h2 class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Stipends Awaiting Bank Transfer
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Autumn Term Course Offerings
       </h2>
-      <a href="{% url 'office:stipend_queue' %}" class="btn btn-outline btn-sm">Process All</a>
+      <a href="{% url 'office:schedule' %}" class="btn btn-outline btn-sm">Full Schedule</a>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
             <tr>
-              <th>Fellow Name</th>
-              <th>Grant Agency</th>
-              <th>Amount</th>
-              <th>Action</th>
+              <th>Course</th>
+              <th>Department</th>
+              <th>Instructor</th>
+              <th>Room</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <div class="font-bold">Aarav Sharma</div>
-                <div class="text-xs text-muted">PI: Dr. K. Raman</div>
+                <div class="font-bold">CS301: DBMS</div>
+                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
               </td>
-              <td><span class="table-code">DST-SERB</span></td>
-              <td><strong class="text-success">₹31,000</strong></td>
-              <td>
-                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
-              </td>
+              <td><span class="table-code">CSE</span></td>
+              <td><strong>Dr. Yatendra Sahu</strong></td>
+              <td><span class="badge badge-neutral">LH-302</span></td>
             </tr>
             <tr>
               <td>
-                <div class="font-bold">Pooja Nair</div>
-                <div class="text-xs text-muted">PI: Dr. K. Raman</div>
+                <div class="font-bold">CS311: DBMS Lab</div>
+                <div class="text-xs text-muted">Practical • 2 Credits</div>
               </td>
-              <td><span class="table-code">DRDO</span></td>
-              <td><strong class="text-success">₹35,000</strong></td>
-              <td>
-                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
-              </td>
+              <td><span class="table-code">CSE</span></td>
+              <td><strong>Dr. Yatendra Sahu</strong></td>
+              <td><span class="badge badge-neutral">LAB-4</span></td>
             </tr>
             <tr>
               <td>
-                <div class="font-bold">Siddharth Menon</div>
-                <div class="text-xs text-muted">PI: Dr. Sunita V.</div>
+                <div class="font-bold">CS302: Operating Systems</div>
+                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
               </td>
-              <td><span class="table-code">DST-SERB</span></td>
-              <td><strong class="text-success">₹37,000</strong></td>
+              <td><span class="table-code">CSE</span></td>
+              <td><strong>Dr. Rahul Chaurasia</strong></td>
+              <td><span class="badge badge-neutral">LH-101</span></td>
+            </tr>
+            <tr>
               <td>
-                <a href="{% url 'office:stipend_queue' %}" class="btn btn-primary btn-sm">Disburse</a>
+                <div class="font-bold">CS303: Computer Networks</div>
+                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
               </td>
+              <td><span class="table-code">CSE</span></td>
+              <td><strong>Dr. Neha Kakkar</strong></td>
+              <td><span class="badge badge-neutral">LH-204</span></td>
             </tr>
           </tbody>
         </table>

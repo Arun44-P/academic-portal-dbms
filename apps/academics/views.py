@@ -150,19 +150,8 @@ def student_attendance_grades(request):
 
 @login_required
 def student_research_role(request):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access restricted to Students.")
-        return redirect('accounts:role_dispatch')
-
-    student = get_object_or_404(StudentProfile, user=request.user)
-    research_roles = ResearchJunior.objects.filter(student=student).select_related('project__pi__user')
-    stipends = StipendDisbursement.objects.filter(junior__student=student).order_by('-disbursement_year', '-disbursement_month')
-
-    return render(request, 'student/research_role.html', {
-        'student': student,
-        'research_roles': research_roles,
-        'stipends': stipends,
-    })
+    messages.info(request, "The Research module is not available in the Academic Management Portal.")
+    return redirect('student:dashboard')
 
 
 # ============================================================================
@@ -177,18 +166,8 @@ def office_dashboard(request):
 
     staff = get_object_or_404(OfficeStaffProfile, user=request.user)
 
-    stipend_queue = StipendDisbursement.objects.filter(
-        payment_status='APPROVED_BY_PI'
-    ).select_related('junior__project__pi__user', 'junior__student')
-
-    processed_stipends = StipendDisbursement.objects.filter(
-        payment_status='PROCESSED'
-    ).select_related('junior', 'processed_by__user').order_by('-disbursed_at')[:10]
-
     return render(request, 'office/dashboard.html', {
         'staff': staff,
-        'stipend_queue': stipend_queue,
-        'processed_stipends': processed_stipends,
         'total_programs': Program.objects.count(),
         'total_courses': Course.objects.count(),
         'active_offerings': CourseOffering.objects.count(),
@@ -197,25 +176,8 @@ def office_dashboard(request):
 
 @login_required
 def stipend_queue_view(request):
-    if request.user.role != 'OFFICE_STAFF':
-        messages.error(request, "Access restricted to Office Staff.")
-        return redirect('accounts:role_dispatch')
-
-    staff = get_object_or_404(OfficeStaffProfile, user=request.user)
-
-    stipend_queue = StipendDisbursement.objects.filter(
-        payment_status='APPROVED_BY_PI'
-    ).select_related('junior__project__pi__user', 'junior__student')
-
-    processed_stipends = StipendDisbursement.objects.filter(
-        payment_status='PROCESSED'
-    ).select_related('junior', 'processed_by__user').order_by('-disbursed_at')[:15]
-
-    return render(request, 'office/stipend_queue.html', {
-        'staff': staff,
-        'stipend_queue': stipend_queue,
-        'processed_stipends': processed_stipends,
-    })
+    messages.info(request, "The Research module is not available in the Academic Management Portal.")
+    return redirect('office:dashboard')
 
 
 @login_required
@@ -234,32 +196,6 @@ def schedule_view(request):
 
 
 @login_required
-def disburse_stipend(request, disbursement_id):
-    if request.user.role != 'OFFICE_STAFF':
-        messages.error(request, "Access denied.")
-        return redirect('accounts:role_dispatch')
-
-    staff = get_object_or_404(OfficeStaffProfile, user=request.user)
-    stipend = get_object_or_404(StipendDisbursement, id=disbursement_id)
-
-    if request.method == 'POST':
-        tx_ref = request.POST.get('transaction_reference', '').strip()
-        if not tx_ref:
-            messages.error(request, "Transaction reference number is mandatory for financial disbursement.")
-            next_url = request.POST.get('next') or 'office:dashboard'
-            return redirect(next_url)
-
-        stipend.office_processed = True
-        stipend.processed_by = staff
-        stipend.payment_status = 'PROCESSED'
-        stipend.transaction_reference = tx_ref
-        stipend.disbursed_at = timezone.now()
-        stipend.save()
-
-        messages.success(
-            request,
-            f"Stipend of ₹{stipend.amount} for {stipend.junior.full_name} marked DISBURSED (Ref: {tx_ref})!"
-        )
-
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'office:dashboard'
-    return redirect(next_url)
+def disburse_stipend(request, disbursement_id=None):
+    messages.info(request, "The Research module is not available in the Academic Management Portal.")
+    return redirect('office:dashboard')

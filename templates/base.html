@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>{% block title %}Academic &amp; Research Portal{% endblock %} | ACADEMIA</title>
+  <title>{% block title %}Academic Management Portal{% endblock %} | ACADEMIA</title>
 
   <!-- Google Font Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,12 +65,6 @@
           <span>Fee &amp; Dues Status</span>
         </a>
 
-        <div class="nav-section-title">Research Assistantship</div>
-        <a href="{% url 'student:research_role' %}" class="nav-link {% if request.resolver_match.url_name == 'research_role' %}active{% endif %}">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span>Research Junior Status</span>
-        </a>
-
       {% elif user.role == 'TEACHER' %}
         <!-- ---------------- Teacher (Faculty) Navigation ---------------- -->
         <div class="nav-section-title">Instruction &amp; Teaching</div>
@@ -91,30 +85,12 @@
           <span>Assessment &amp; Marks</span>
         </a>
 
-        <div class="nav-section-title">Research Wing</div>
-        <a href="{% url 'teacher:research_projects' %}" class="nav-link {% if request.resolver_match.url_name == 'research_projects' %}active{% endif %}">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-          <span>Grants &amp; Projects</span>
-        </a>
-        <a href="{% url 'teacher:research_juniors' %}" class="nav-link {% if request.resolver_match.url_name == 'research_juniors' %}active{% endif %}">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/><circle cx="19" cy="11" r="2"/></svg>
-          <span>Junior Fellows &amp; Stipends</span>
-        </a>
-        <a href="{% url 'teacher:publications' %}" class="nav-link {% if request.resolver_match.url_name == 'publications' %}active{% endif %}">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          <span>Publications</span>
-        </a>
-
       {% elif user.role == 'OFFICE' or user.role == 'OFFICE_STAFF' %}
         <!-- ---------------- Office Staff Navigation ---------------- -->
         <div class="nav-section-title">Administration &amp; Accounts</div>
         <a href="{% url 'office:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>Operations Summary</span>
-        </a>
-        <a href="{% url 'office:stipend_queue' %}" class="nav-link {% if request.resolver_match.url_name == 'stipend_queue' %}active{% endif %}">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span>Stipend Disbursement</span>
         </a>
         <a href="{% url 'office:schedule' %}" class="nav-link {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>

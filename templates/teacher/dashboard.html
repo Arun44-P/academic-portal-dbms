@@ -57,15 +57,15 @@
     <div class="stat-card-top">
       <div>
         <div class="stat-label">Allocated Sections</div>
-        <div class="stat-value">{{ active_sections_count|default:"3" }}</div>
+        <div class="stat-value">{{ active_sections_count|default:"2" }}</div>
       </div>
       <div class="stat-icon stat-icon-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">10 Credit Hours</span>
-      <span class="text-muted">CS301, CS311, CS420</span>
+      <span class="stat-delta delta-positive">Core Courses</span>
+      <span class="text-muted">CS301, CS311 (DBMS)</span>
     </div>
   </div>
 
@@ -74,7 +74,7 @@
     <div class="stat-card-top">
       <div>
         <div class="stat-label">Students Under Instruction</div>
-        <div class="stat-value">{{ total_students_count|default:"142" }}</div>
+        <div class="stat-value">{{ total_students_count|default:"88" }}</div>
       </div>
       <div class="stat-icon stat-icon-success">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -82,45 +82,45 @@
     </div>
     <div class="stat-footer">
       <span class="stat-delta delta-positive">Avg Attendance: 86.4%</span>
-      <span class="text-muted">3 Sections</span>
+      <span class="text-muted">Registered Scholars</span>
     </div>
   </div>
 
-  <!-- Metric 3: Sponsored Research Grants -->
+  <!-- Metric 3: Weekly Teaching Load -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Active Research Grants</div>
-        <div class="stat-value">{{ active_grants_count|default:"2" }}</div>
+        <div class="stat-label">Weekly Instructional Load</div>
+        <div class="stat-value text-primary">14 <span class="text-sm text-muted font-medium">Hrs/Week</span></div>
       </div>
       <div class="stat-icon stat-icon-warning">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">₹85.4 Lakhs Funding</span>
-      <span class="text-muted">DST-SERB &amp; DRDO</span>
+      <span class="stat-delta delta-neutral">Theory &amp; Labs</span>
+      <span class="text-muted">Autumn 2026-27</span>
     </div>
   </div>
 
-  <!-- Metric 4: Attached Junior Researchers -->
+  <!-- Metric 4: Academic Compliance -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Attached Research Fellows</div>
-        <div class="stat-value">{{ attached_juniors_count|default:"4" }}</div>
+        <div class="stat-label">Detention Risk Compliance</div>
+        <div class="stat-value text-success">96.2%</div>
       </div>
       <div class="stat-icon stat-icon-purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="badge badge-warning">1 Stipend Pending Approval</span>
+      <span class="badge badge-success">&ge; 75% Threshold Met</span>
     </div>
   </div>
 </div>
 
-<!-- Two-Column Grid: Course Sections & Research Highlights -->
+<!-- Two-Column Grid: Course Sections & Academic Overview -->
 <div class="grid-2-col">
   <!-- Active Sections Quick Action -->
   <div class="card">
@@ -175,34 +175,45 @@
     </div>
   </div>
 
-  <!-- Research Stipend Actions Alert Card -->
+  <!-- Academic Quick Actions & Evaluation Card -->
   <div class="card">
     <div class="card-header">
       <h2 class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Research Wing: Pending Approvals
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Instructional Workflows &amp; Assessment
       </h2>
-      <a href="{% url 'teacher:research_juniors' %}" class="btn btn-primary btn-sm">Review Queue</a>
+      <a href="{% url 'teacher:marks_entry' %}" class="btn btn-primary btn-sm">Enter Marks</a>
     </div>
     <div class="card-body">
-      <div class="alert alert-warning" style="margin-bottom: 1rem;">
-        <span class="alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+      <div class="alert alert-info" style="margin-bottom: 1.25rem;">
+        <span class="alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
         <div class="alert-content">
-          <strong>1 Monthly Stipend Pending PI Approval:</strong>
-          <div>Aarav Sharma (JRF) has submitted October 2026 progress report for DST Project. Approval needed to route funds to Office Accounts.</div>
+          <strong>Mid-Term Evaluation Period Active:</strong>
+          <div>Mid-term examination marks and continuous assessment rubrics are currently open for submission. All section rosters are synced.</div>
         </div>
       </div>
-      <div class="flex items-center justify-between" style="padding: 0.75rem; background-color: var(--bg-surface-alt); border-radius: var(--radius-sm);">
-        <div>
-          <span class="font-bold text-main">DST-SERB Grant Budget Utilized:</span>
-          <div class="text-xs text-muted">₹14.8 L of ₹24.0 L Allocated Stipend Pool</div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div class="flex items-center justify-between" style="padding: 0.85rem; background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <div>
+            <div class="font-bold text-main">Session Attendance Tracking</div>
+            <div class="text-xs text-muted">Daily lecture rosters with biometric sync and detention alarms.</div>
+          </div>
+          <a href="{% url 'teacher:attendance_entry' %}" class="btn btn-outline btn-sm">Log Today</a>
         </div>
-        <span class="badge badge-success">61.6% Expended</span>
+
+        <div class="flex items-center justify-between" style="padding: 0.85rem; background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <div>
+            <div class="font-bold text-main">Gradebook &amp; Relative Grading</div>
+            <div class="text-xs text-muted">Relative scale calibration, mid-term &amp; end-term weightage.</div>
+          </div>
+          <a href="{% url 'teacher:marks_entry' %}" class="btn btn-outline btn-sm">Manage Grades</a>
+        </div>
       </div>
     </div>
     <div class="card-footer">
-      <a href="{% url 'teacher:publications' %}" class="text-sm font-semibold">
-        Manage Research Publications (14 indexed) &rarr;
+      <a href="{% url 'teacher:sections' %}" class="text-sm font-semibold">
+        View all allocated sections &amp; enrolled rosters &rarr;
       </a>
     </div>
   </div>
