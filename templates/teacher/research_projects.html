@@ -65,7 +65,7 @@
         </div>
         <div class="flex items-center justify-between">
           <span class="text-muted">Principal Investigator (PI):</span>
-          <span class="font-bold text-main">Dr. K. Raman (You)</span>
+          <span class="font-bold text-main">{% if 'Dr.' in user.get_full_name or 'Prof.' in user.get_full_name %}{{ user.get_full_name }}{% else %}Dr. {{ user.get_full_name|default:user.username }}{% endif %} (You)</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-muted">Co-Investigators (Co-PI):</span>
@@ -132,7 +132,7 @@
         </div>
         <div class="flex items-center justify-between">
           <span class="text-muted">Principal Investigator (PI):</span>
-          <span class="font-bold text-main">Dr. K. Raman (You)</span>
+          <span class="font-bold text-main">{% if 'Dr.' in user.get_full_name or 'Prof.' in user.get_full_name %}{{ user.get_full_name }}{% else %}Dr. {{ user.get_full_name|default:user.username }}{% endif %} (You)</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-muted">Co-Investigators (Co-PI):</span>

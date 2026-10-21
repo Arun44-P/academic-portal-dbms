@@ -11,18 +11,28 @@
     <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
       <div class="flex items-center gap-4">
         <div class="stat-icon stat-icon-primary" style="width: 56px; height: 56px; font-size: 1.5rem; font-weight: 800;">
-          DR
+          {% if user.first_name and user.last_name %}
+            {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+          {% else %}
+            {{ user.username|slice:":2"|upper }}
+          {% endif %}
         </div>
         <div>
           <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">
-            {{ teacher.user.get_full_name|default:"Dr. K. Raman, Ph.D." }}
+            {% if "Dr." in user.get_full_name or "Prof." in user.get_full_name %}
+              {{ user.get_full_name }}
+            {% else %}
+              Dr. {{ user.get_full_name|default:user.username }}
+            {% endif %}
           </h1>
           <div class="flex items-center gap-3 text-sm text-muted" style="flex-wrap: wrap;">
-            <span><strong>Employee ID:</strong> <span class="text-mono">{{ teacher.employee_code|default:"FAC-CS-04" }}</span></span>
+            <span><strong>Employee ID:</strong> <span class="text-mono">{{ instructor.employee_code|default:teacher.employee_code|default:user.instructor_profile.employee_code|default:"FAC-CSE-001" }}</span></span>
             <span>•</span>
-            <span><strong>Department:</strong> {{ teacher.department|default:"Computer Science & Engineering" }}</span>
+            <span><strong>Department:</strong> {{ instructor.department.name|default:teacher.department.name|default:user.instructor_profile.department.name|default:"Computer Science & Engineering" }}</span>
             <span>•</span>
-            <span><strong>Office:</strong> Room 304, CS Academic Block</span>
+            <span><strong>Designation:</strong> {{ instructor.designation|default:teacher.designation|default:user.instructor_profile.designation|default:"Professor" }}</span>
+            <span>•</span>
+            <span><strong>Office:</strong> {{ instructor.office_room|default:teacher.office_room|default:user.instructor_profile.office_room|default:"Faculty Wing" }}</span>
           </div>
         </div>
       </div>
@@ -30,7 +40,7 @@
         <!-- 3-Tier Categorization Badge: Permanent Faculty, Assistant Professor, or Visiting Professor -->
         <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
           <span class="badge-dot"></span>
-          <span>Permanent Faculty (Tenured Professor)</span>
+          <span>{{ instructor.get_faculty_category_display|default:teacher.get_faculty_category_display|default:user.instructor_profile.get_faculty_category_display|default:"Permanent Faculty" }}</span>
         </span>
         <span class="badge badge-success">
           <span>Active Academic Term</span>

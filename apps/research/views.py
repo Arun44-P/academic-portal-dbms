@@ -42,6 +42,7 @@ def faculty_dashboard(request):
 
     return render(request, 'teacher/dashboard.html', {
         'instructor': instructor,
+        'teacher': instructor,
         'offerings': offerings,
         'pi_projects': pi_projects,
         'co_pi_projects': co_pi_projects,
