@@ -463,10 +463,10 @@
   gap: 0.75rem;
 }
 
-/* Responsive Stat Grid */
+/* Responsive Stat Grid - 4 cols desktop, 2 cols tablet, 1 col mobile */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
   margin-bottom: 1.75rem;
 }
@@ -517,12 +517,20 @@
 }
 
 @media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
   .grid-2-col, .grid-3-col, .grid-sidebar-layout, .grid-1-3-col {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
   .app-content {
     padding: 1.25rem 1rem;
   }
@@ -539,6 +547,330 @@
   .page-header-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Fee Management Controls & Filters
+   -------------------------------------------------------------------------- */
+.fee-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.fee-filter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.search-input-wrap {
+  position: relative;
+  min-width: 260px;
+  flex: 1;
+}
+
+.search-input-wrap svg {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input-wrap .form-control {
+  padding-left: 2.35rem;
+  height: 40px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+.fee-filter-select {
+  height: 40px;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.fee-filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary-600);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.fee-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-xs {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+}
+
+.table-amount-due {
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.table-amount-cleared {
+  font-weight: 700;
+  color: #16a34a;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. 6-KPI Summary Grid System
+   -------------------------------------------------------------------------- */
+.stats-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid-6 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid-6 {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Executive Management Launchpad Hub
+   -------------------------------------------------------------------------- */
+.admin-launchpad {
+  margin-bottom: 1.75rem;
+}
+
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.launchpad-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.launchpad-card:hover {
+  text-decoration: none;
+  color: inherit;
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.launchpad-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.launchpad-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.launchpad-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+.launchpad-card-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 0.875rem;
+}
+
+.launchpad-card-action {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  margin-top: auto;
+}
+
+.launchpad-card:hover .launchpad-card-action {
+  color: var(--color-primary-700);
+}
+
+@media (max-width: 1024px) {
+  .launchpad-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .launchpad-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   7. 6-KPI Summary Grid System
+   -------------------------------------------------------------------------- */
+.stats-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid-6 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid-6 {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Executive Management Launchpad Hub
+   -------------------------------------------------------------------------- */
+.admin-launchpad {
+  margin-bottom: 1.75rem;
+}
+
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.launchpad-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.launchpad-card:hover {
+  text-decoration: none;
+  color: inherit;
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.launchpad-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.launchpad-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.launchpad-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+.launchpad-card-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 0.875rem;
+}
+
+.launchpad-card-action {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  margin-top: auto;
+}
+
+.launchpad-card:hover .launchpad-card-action {
+  color: var(--color-primary-700);
+}
+
+@media (max-width: 1024px) {
+  .launchpad-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .launchpad-grid {
+    grid-template-columns: 1fr;
   }
 }
 

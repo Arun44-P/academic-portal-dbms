@@ -64,9 +64,24 @@ For complete deployment instructions with a persistent online SQL database (TiDB
 
 ### 1. Prerequisites
 - Python 3.10+
+- MySQL Server 8.0+ (Installed and running on port 3306)
+- MySQL Workbench 8.0+ (For visual inspection)
 - Git
 
-### 2. Setup Virtual Environment
+### 2. Database Configuration (`.env`)
+The portal connects to MySQL via environment variables configured in `.env` (git-ignored):
+```env
+DB_ENGINE=mysql
+DB_NAME=academic_portal_db
+DB_USER=academia_user
+DB_PASSWORD=Academia_Pass#2026
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_SSL=false
+```
+*(To switch back to SQLite for offline testing, simply comment out `DB_ENGINE=mysql` in `.env`)*.
+
+### 3. Setup Virtual Environment & Run Migrations
 ```bash
 python -m venv .venv
 # On Windows:
@@ -75,12 +90,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
-```
-
-### 3. Run Migrations & Seed Demo Data
-```bash
 python manage.py migrate
-python manage.py seed_db
 ```
 
 ### 4. Launch the Web Application
@@ -88,6 +98,20 @@ python manage.py seed_db
 python manage.py runserver 127.0.0.1:8000
 ```
 Visit `http://127.0.0.1:8000/accounts/login/` in your browser.
+
+---
+
+## 🐬 Inspecting Database in MySQL Workbench
+
+1. Launch **MySQL Workbench**.
+2. Click your local connection (or connect as `academia_user` with password `Academia_Pass#2026` or `root`).
+3. Under the **Schemas** tab in the left sidebar, double-click **`academic_portal_db`**.
+4. Expand **Tables** to inspect all 31 tables.
+5. Right-click any table (e.g. `academics_studentfeeaccount` or `accounts_studentprofile`) and choose **Select Rows - Limit 1000**.
+6. To generate the **EER Diagram**:
+   - Menu: **Database** &rarr; **Reverse Engineer...**
+   - Select `academic_portal_db` &rarr; Click **Next** &rarr; **Execute**.
+   - Workbench will generate the full visual relational diagram with all foreign keys.
 
 ---
 

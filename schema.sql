@@ -357,3 +357,66 @@ JOIN course_offerings co ON e.offering_id = co.offering_id
 JOIN courses c ON co.course_id = c.course_id
 JOIN instructors i ON co.instructor_id = i.instructor_id
 JOIN user_accounts u_prof ON i.instructor_id = u_prof.user_id;
+
+
+-- ============================================================================
+-- 7. STUDENT FEE MANAGEMENT & INSTITUTIONAL PAYMENT LEDGER
+-- ============================================================================
+
+CREATE TABLE student_fee_accounts (
+    fee_account_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    semester_id INT NOT NULL,
+    tuition_fee DECIMAL(10, 2) NOT NULL DEFAULT 200000.00,
+    hostel_fee DECIMAL(10, 2) NOT NULL DEFAULT 60000.00,
+    amenities_exam_fee DECIMAL(10, 2) NOT NULL DEFAULT 40000.00,
+    total_fee DECIMAL(10, 2) NOT NULL DEFAULT 300000.00,
+    scholarship_concession DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    due_date DATE NOT NULL,
+    status ENUM('PAID', 'PARTIAL', 'PENDING', 'OVERDUE') NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (semester_id) REFERENCES academic_semesters(semester_id) ON DELETE RESTRICT,
+    UNIQUE KEY uq_student_semester_fee (student_id, semester_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE fee_payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    fee_account_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_method ENUM('SBI_COLLECT', 'NET_BANKING', 'UPI', 'DEMAND_DRAFT', 'CHALLAN', 'CASH') NOT NULL DEFAULT 'SBI_COLLECT',
+    transaction_reference VARCHAR(100) NOT NULL UNIQUE,
+    receipt_number VARCHAR(60) NOT NULL UNIQUE,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('CONFIRMED', 'PENDING_CLEARANCE', 'REFUNDED') NOT NULL DEFAULT 'CONFIRMED',
+    recorded_by_staff_id INT NULL,
+    remarks TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (fee_account_id) REFERENCES student_fee_accounts(fee_account_id) ON DELETE CASCADE,
+    FOREIGN KEY (recorded_by_staff_id) REFERENCES office_staff(staff_id) ON DELETE SET NULL,
+    CHECK (amount > 0)
+) ENGINE=InnoDB;
+
+-- 5. Student Fee Management Overview View
+CREATE OR REPLACE VIEW view_student_fee_summary AS
+SELECT 
+    sfa.fee_account_id,
+    s.roll_number,
+    u.first_name,
+    u.last_name,
+    p.name AS program_name,
+    d.code AS department_code,
+    s.current_semester,
+    sfa.total_fee,
+    sfa.scholarship_concession,
+    (sfa.total_fee - sfa.scholarship_concession) AS net_applicable_fee,
+    COALESCE((SELECT SUM(fp.amount) FROM fee_payments fp WHERE fp.fee_account_id = sfa.fee_account_id AND fp.status = 'CONFIRMED'), 0) AS total_paid,
+    ((sfa.total_fee - sfa.scholarship_concession) - COALESCE((SELECT SUM(fp.amount) FROM fee_payments fp WHERE fp.fee_account_id = sfa.fee_account_id AND fp.status = 'CONFIRMED'), 0)) AS remaining_fee,
+    sfa.due_date,
+    sfa.status
+FROM student_fee_accounts sfa
+JOIN students s ON sfa.student_id = s.student_id
+JOIN user_accounts u ON s.student_id = u.user_id
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id;

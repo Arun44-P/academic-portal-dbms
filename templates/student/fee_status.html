@@ -8,7 +8,7 @@
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Student Academic Fee Status &amp; Dues</h1>
-    <p class="text-sm text-muted">Official institutional fee account statement for B.Tech CSE (IIIT Bhopal) - Academic Year 2026-27.</p>
+    <p class="text-sm text-muted">Official institutional fee account statement for {{ student.program.name }} - Academic Year 2026-27.</p>
   </div>
   <div class="page-header-actions">
     <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">
@@ -25,7 +25,7 @@
     <div class="stat-card-top">
       <div>
         <div class="stat-label">Total Annual Academic Fee</div>
-        <div class="stat-value">₹3,00,000</div>
+        <div class="stat-value">₹{{ total_fee|floatformat:2 }}</div>
       </div>
       <div class="stat-icon stat-icon-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -42,32 +42,38 @@
     <div class="stat-card-top">
       <div>
         <div class="stat-label">Amount Paid</div>
-        <div class="stat-value text-success">₹2,00,000</div>
+        <div class="stat-value text-success">₹{{ paid_fee|floatformat:2 }}</div>
       </div>
       <div class="stat-icon stat-icon-success">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">66.7% Cleared</span>
-      <span class="text-muted">Paid via SBI Collect</span>
+      <span class="stat-delta delta-positive">Verified Receipts</span>
+      <span class="text-muted">Cleared Funds</span>
     </div>
   </div>
 
   <!-- Amount Due -->
-  <div class="stat-card" style="border-left: 3px solid #f59e0b;">
+  <div class="stat-card" style="border-left: 3px solid {% if due_fee > 0 %}#f59e0b{% else %}#10b981{% endif %};">
     <div class="stat-card-top">
       <div>
         <div class="stat-label">Outstanding Balance Due</div>
-        <div class="stat-value text-warning">₹1,00,000</div>
+        <div class="stat-value {% if due_fee > 0 %}text-warning{% else %}text-success{% endif %}">₹{{ due_fee|floatformat:2 }}</div>
       </div>
-      <div class="stat-icon stat-icon-warning">
+      <div class="stat-icon {% if due_fee > 0 %}stat-icon-warning{% else %}stat-icon-success{% endif %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="badge badge-warning">Due by 30th Nov 2026</span>
-      <span class="text-muted">Installment 2</span>
+      {% if fee_account and fee_account.status == 'PAID' %}
+        <span class="badge badge-success">Fully Cleared</span>
+      {% elif fee_account and fee_account.status == 'OVERDUE' %}
+        <span class="badge badge-danger">Overdue Notice</span>
+      {% else %}
+        <span class="badge badge-warning">Due by {{ fee_account.due_date|date:"d M Y"|default:"30 Nov 2026" }}</span>
+      {% endif %}
+      <span class="text-muted">Installment</span>
     </div>
   </div>
 </div>
@@ -77,9 +83,9 @@
   <div class="card-header">
     <h2 class="card-title">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Fee Head-Wise Breakdown (IIIT Bhopal Standard)
+      Fee Head-Wise Breakdown (Official Institute Standard)
     </h2>
-    <span class="text-xs text-muted">Roll No: {{ student.roll_number|default:"2024BCS001" }}</span>
+    <span class="text-xs text-muted">Roll No: {{ student.roll_number }}</span>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -99,39 +105,63 @@
               <div class="font-bold">Tuition &amp; Academic Instruction Fee</div>
               <div class="text-xs text-muted">Core classroom instruction, lab maintenance &amp; software licenses</div>
             </td>
-            <td><strong>₹2,00,000</strong></td>
-            <td><strong class="text-success">₹1,50,000</strong></td>
-            <td><strong class="text-warning">₹50,000</strong></td>
-            <td><span class="badge badge-warning">Partial Due</span></td>
+            <td><strong>₹{{ fee_account.tuition_fee|default:"200000.00"|floatformat:2 }}</strong></td>
+            <td><strong class="text-success">₹{% if paid_fee >= 200000 %}2,00,000.00{% else %}{{ paid_fee|floatformat:2 }}{% endif %}</strong></td>
+            <td><strong class="text-warning">₹{% if paid_fee >= 200000 %}0.00{% else %}50,000.00{% endif %}</strong></td>
+            <td>
+              {% if paid_fee >= 200000 %}
+                <span class="badge badge-success">Cleared</span>
+              {% else %}
+                <span class="badge badge-warning">Partial Due</span>
+              {% endif %}
+            </td>
           </tr>
           <tr>
             <td>
               <div class="font-bold">Hostel Accommodation &amp; Mess Amenities</div>
               <div class="text-xs text-muted">Campus residence, dining hall &amp; facility maintenance</div>
             </td>
-            <td><strong>₹60,000</strong></td>
-            <td><strong class="text-success">₹30,000</strong></td>
-            <td><strong class="text-warning">₹30,000</strong></td>
-            <td><span class="badge badge-warning">Partial Due</span></td>
+            <td><strong>₹{{ fee_account.hostel_fee|default:"60000.00"|floatformat:2 }}</strong></td>
+            <td><strong class="text-success">₹{% if paid_fee >= 260000 %}60,000.00{% else %}30,000.00{% endif %}</strong></td>
+            <td><strong class="text-warning">₹{% if paid_fee >= 260000 %}0.00{% else %}30,000.00{% endif %}</strong></td>
+            <td>
+              {% if paid_fee >= 260000 %}
+                <span class="badge badge-success">Cleared</span>
+              {% else %}
+                <span class="badge badge-warning">Partial Due</span>
+              {% endif %}
+            </td>
           </tr>
           <tr>
             <td>
               <div class="font-bold">Examination, Library &amp; Student Welfare Fund</div>
               <div class="text-xs text-muted">Semester examinations, digital library access &amp; sports</div>
             </td>
-            <td><strong>₹40,000</strong></td>
-            <td><strong class="text-success">₹20,000</strong></td>
-            <td><strong class="text-warning">₹20,000</strong></td>
-            <td><span class="badge badge-warning">Partial Due</span></td>
+            <td><strong>₹{{ fee_account.amenities_exam_fee|default:"40000.00"|floatformat:2 }}</strong></td>
+            <td><strong class="text-success">₹{% if paid_fee >= 300000 %}40,000.00{% else %}20,000.00{% endif %}</strong></td>
+            <td><strong class="text-warning">₹{% if paid_fee >= 300000 %}0.00{% else %}20,000.00{% endif %}</strong></td>
+            <td>
+              {% if paid_fee >= 300000 %}
+                <span class="badge badge-success">Cleared</span>
+              {% else %}
+                <span class="badge badge-warning">Partial Due</span>
+              {% endif %}
+            </td>
           </tr>
         </tbody>
         <tfoot>
           <tr style="background-color: var(--bg-surface-alt); font-weight: 700;">
             <td>Total Consolidated Fee</td>
-            <td>₹3,00,000</td>
-            <td class="text-success">₹2,00,000</td>
-            <td class="text-warning">₹1,00,000</td>
-            <td><span class="badge badge-warning">Net Due: ₹1,00,000</span></td>
+            <td>₹{{ total_fee|floatformat:2 }}</td>
+            <td class="text-success">₹{{ paid_fee|floatformat:2 }}</td>
+            <td class="text-warning">₹{{ due_fee|floatformat:2 }}</td>
+            <td>
+              {% if due_fee == 0 %}
+                <span class="badge badge-success">✓ Fully Cleared</span>
+              {% else %}
+                <span class="badge badge-warning">Net Due: ₹{{ due_fee|floatformat:2 }}</span>
+              {% endif %}
+            </td>
           </tr>
         </tfoot>
       </table>
@@ -154,30 +184,33 @@
         <thead>
           <tr>
             <th>Transaction ID</th>
+            <th>Receipt No</th>
             <th>Date &amp; Time</th>
-            <th>Payment Gateway</th>
+            <th>Payment Mode</th>
             <th>Amount Paid</th>
             <th>Status</th>
-            <th>Receipt</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td><span class="table-code font-bold">SBIC-2026-992147</span></td>
-            <td>18 July 2026, 11:42 AM</td>
-            <td>SBI Collect (NetBanking / UPI)</td>
-            <td><strong class="text-success">₹2,00,000.00</strong></td>
-            <td><span class="badge badge-success">✓ Verified &amp; Cleared</span></td>
-            <td>
-              <button type="button" class="btn btn-outline btn-sm" onclick="alert('Downloading official receipt SBIC-2026-992147...')">
-                Download PDF
-              </button>
-            </td>
-          </tr>
+          {% for p in payments %}
+            <tr>
+              <td><span class="table-code font-bold">{{ p.transaction_reference }}</span></td>
+              <td><span class="text-xs font-bold text-primary">{{ p.receipt_number }}</span></td>
+              <td>{{ p.payment_date|date:"d F Y, h:i A" }}</td>
+              <td>{{ p.get_payment_method_display }}</td>
+              <td><strong class="text-success">₹{{ p.amount|floatformat:2 }}</strong></td>
+              <td><span class="badge badge-success">✓ {{ p.get_status_display }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2rem;">
+                <p class="text-muted">No payment transactions recorded yet.</p>
+              </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
 {% endblock %}
-

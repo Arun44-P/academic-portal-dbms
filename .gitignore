@@ -27,3 +27,8 @@ mysql_data/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Database Backups
+backups/
+*.dump.json
+

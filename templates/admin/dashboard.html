@@ -1,105 +1,245 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Institute Admin Analytics{% endblock %}
+{% block title %}Institute Administration & Analytics{% endblock %}
 {% block breadcrumb %}Administrator / Institutional Governance{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-header-title">Institute Analytics &amp; System Health</h1>
-    <p class="text-sm text-muted">Administrative oversight: user provisioning, 3-tier faculty distribution, curriculum management, and MySQL database engine telemetry.</p>
+    <h1 class="page-header-title">Institute Administration &amp; Analytics</h1>
+    <p class="text-sm text-muted">Institutional oversight: students, faculty rosters, administrative staff, course curricula, fee collections, and system security.</p>
   </div>
   <div class="page-header-actions">
     <a href="{% url 'core_admin:database_console' %}" class="btn btn-outline btn-sm text-danger font-semibold">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-      DB Console &amp; Danger Zone
+      DB Console &amp; Health
     </a>
     <a href="{% url 'core_admin:users' %}" class="btn btn-primary btn-sm">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      Provision User
+      User Directory
     </a>
   </div>
 </div>
 
-<!-- 4 Core Institute KPIs -->
-<div class="stats-grid">
-  <!-- Total Active Accounts -->
+<!-- ======================================================================
+     1. TOP 6 CORE INSTITUTIONAL KPIS (Dynamically Queried from MySQL)
+     ====================================================================== -->
+<div class="stats-grid-6">
+  <!-- KPI 1: Total Students -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Total Provisioned Users</div>
-        <div class="stat-value">1,418</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value">{{ metrics.total_students }}</div>
       </div>
       <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">{{ metrics.active_students }} Active</span>
+      <span class="text-muted">UG &amp; PG Degree Programs</span>
+    </div>
+  </div>
+
+  <!-- KPI 2: Total Faculty -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Total Faculty</div>
+        <div class="stat-value">{{ metrics.total_faculty }}</div>
+      </div>
+      <div class="stat-icon stat-icon-purple">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">1,240 Students • 112 Faculty</span>
+      <span class="stat-delta delta-positive">{{ metrics.perm_faculty }} Tenured • {{ metrics.asst_faculty }} Asst</span>
+      <span class="text-muted">{{ metrics.visit_faculty }} Visiting</span>
     </div>
   </div>
 
-  <!-- Total Course Offerings Active -->
+  <!-- KPI 3: Total Staff -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Active Course Curricula</div>
-        <div class="stat-value text-success">8 Courses • 24 Sections</div>
+        <div class="stat-label">Total Staff</div>
+        <div class="stat-value">{{ metrics.total_staff }}</div>
+      </div>
+      <div class="stat-icon stat-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="stat-delta delta-positive">Accounts &amp; Admin</span>
+      <span class="text-muted">Non-Teaching Operations</span>
+    </div>
+  </div>
+
+  <!-- KPI 4: Active Courses -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Active Courses</div>
+        <div class="stat-value text-success">{{ metrics.total_courses }}</div>
       </div>
       <div class="stat-icon stat-icon-success">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">Autumn 2026-27</span>
-      <span class="text-muted">UG &amp; PG Modules</span>
-    </div>
-  </div>
-      <div class="stat-icon stat-icon-success">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-    </div>
-    <div class="stat-footer">
-      <span class="stat-delta delta-positive">16 Grants</span>
-      <span class="text-muted">₹1.85 Cr Stipend Pool</span>
+      <span class="stat-delta delta-positive">{{ metrics.active_offerings }} Active Sections</span>
+      <span class="text-muted">Autumn 2026-27</span>
     </div>
   </div>
 
-  <!-- Database Engine Metrics -->
+  <!-- KPI 5: Outstanding Student Fees -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">MySQL InnoDB Buffer Hit</div>
-        <div class="stat-value text-primary">99.4%</div>
+        <div class="stat-label">Outstanding Fees</div>
+        <div class="stat-value text-danger">&#8377;{{ metrics.total_outstanding|floatformat:2 }}</div>
       </div>
-      <div class="stat-icon stat-icon-purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      <div class="stat-icon stat-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="badge badge-success">InnoDB ACID Normal</span>
+      <span class="stat-delta delta-negative">{{ metrics.pending_accounts_count }} with Dues</span>
+      <span class="text-muted">&#8377;{{ metrics.total_fee_collected|floatformat:2 }} Paid</span>
     </div>
   </div>
 
-  <!-- Security Audit Status -->
+  <!-- KPI 6: Active User Accounts -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Audit Log Records</div>
-        <div class="stat-value">842</div>
+        <div class="stat-label">Active User Accounts</div>
+        <div class="stat-value text-primary">{{ metrics.active_users }}</div>
       </div>
-      <div class="stat-icon stat-icon-warning">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="badge badge-info">Zero Breaches Detected</span>
+      <span class="stat-delta delta-positive">100% Operational</span>
+      <span class="text-muted">{{ metrics.total_users }} Total Provisioned</span>
     </div>
   </div>
 </div>
 
-<!-- Two-Column Breakdown: User Roles & 3-Tier Faculty Breakdown -->
+<!-- ======================================================================
+     2. EXECUTIVE INSTITUTIONAL MANAGEMENT HUB (Launchpad)
+     ====================================================================== -->
+<div class="admin-launchpad">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Institutional Management Modules
+      </h2>
+      <span class="badge badge-info">Administrative Hub</span>
+    </div>
+    <div class="card-body">
+      <div class="launchpad-grid">
+        <!-- Student Module -->
+        <a href="{% url 'core_admin:users' %}?role=STUDENT" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              </div>
+              <span class="badge badge-primary">{{ metrics.total_students }} Enrolled</span>
+            </div>
+            <div class="launchpad-card-title">Student Management</div>
+            <div class="launchpad-card-desc">Search, filter, inspect student profiles, academic enrollments, and status controls.</div>
+          </div>
+          <div class="launchpad-card-action">Open Student Registry &rarr;</div>
+        </a>
+
+        <!-- Faculty Module -->
+        <a href="{% url 'core_admin:users' %}?role=TEACHER" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-purple">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <span class="badge badge-purple">{{ metrics.total_faculty }} Faculty</span>
+            </div>
+            <div class="launchpad-card-title">Faculty Management</div>
+            <div class="launchpad-card-desc">Oversee permanent, assistant, and visiting faculty designations and curricular assignments.</div>
+          </div>
+          <div class="launchpad-card-action">Open Faculty Directory &rarr;</div>
+        </a>
+
+        <!-- Staff Module -->
+        <a href="{% url 'core_admin:users' %}?role=OFFICE_STAFF" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </div>
+              <span class="badge badge-warning">{{ metrics.total_staff }} Staff</span>
+            </div>
+            <div class="launchpad-card-title">Staff Management</div>
+            <div class="launchpad-card-desc">Manage non-teaching personnel across Accounts, Admissions, and Examinations branches.</div>
+          </div>
+          <div class="launchpad-card-action">Open Staff Directory &rarr;</div>
+        </a>
+
+        <!-- Fee Governance -->
+        <a href="{% url 'office:dashboard' %}" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <span class="badge badge-danger">&#8377;{{ metrics.total_outstanding|floatformat:0 }} Due</span>
+            </div>
+            <div class="launchpad-card-title">Fee Governance &amp; Ledgers</div>
+            <div class="launchpad-card-desc">Review student fee accounts, track confirmed payments, and audit payment balances.</div>
+          </div>
+          <div class="launchpad-card-action">Open Fee Ledgers &rarr;</div>
+        </a>
+
+        <!-- User & Role Security -->
+        <a href="{% url 'core_admin:users' %}" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <span class="badge badge-success">{{ metrics.active_users }} Active</span>
+            </div>
+            <div class="launchpad-card-title">User &amp; Role Management</div>
+            <div class="launchpad-card-desc">Configure institutional credentials, toggle account statuses, and audit role access permissions.</div>
+          </div>
+          <div class="launchpad-card-action">Manage User Accounts &rarr;</div>
+        </a>
+
+        <!-- Database Console -->
+        <a href="{% url 'core_admin:database_console' %}" class="launchpad-card">
+          <div>
+            <div class="launchpad-card-header">
+              <div class="launchpad-icon stat-icon-success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              </div>
+              <span class="badge badge-info">MySQL 8.0</span>
+            </div>
+            <div class="launchpad-card-title">Database Console &amp; Health</div>
+            <div class="launchpad-card-desc">Monitor InnoDB buffer caching, inspect 31 relational tables, and access danger-zone controls.</div>
+          </div>
+          <div class="launchpad-card-action">Launch DB Console &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================
+     3. TWO-COLUMN BREAKDOWN: ROLE DISTRIBUTION & FACULTY SPECIALIZATION
+     ====================================================================== -->
 <div class="grid-2-col">
   <!-- User Base Breakdown Card -->
   <div class="card">
@@ -114,34 +254,34 @@
       <div style="display: flex; flex-direction: column; gap: 1rem;">
         <div>
           <div class="flex items-center justify-between text-sm" style="margin-bottom: 0.25rem;">
-            <span><strong>Undergraduate &amp; Postgrad Students</strong> (`students`)</span>
-            <span class="font-bold text-main">1,240 (87.4%)</span>
+            <span><strong>Undergraduate &amp; Postgrad Students</strong> (<code>STUDENT</code>)</span>
+            <span class="font-bold text-main">{{ metrics.role_counts.STUDENT }} ({{ metrics.role_pct.STUDENT }}%)</span>
           </div>
-          <div class="progress progress-lg"><div class="progress-bar" style="width: 87.4%; background-color: var(--color-primary-600);"></div></div>
+          <div class="progress progress-lg"><div class="progress-bar" style="width: {{ metrics.role_pct.STUDENT }}%; background-color: var(--color-primary-600);"></div></div>
         </div>
 
         <div>
           <div class="flex items-center justify-between text-sm" style="margin-bottom: 0.25rem;">
-            <span><strong>Faculty &amp; Instructors</strong> (`instructors`)</span>
-            <span class="font-bold text-main">112 (7.9%)</span>
+            <span><strong>Faculty &amp; Instructors</strong> (<code>TEACHER</code>)</span>
+            <span class="font-bold text-main">{{ metrics.role_counts.TEACHER }} ({{ metrics.role_pct.TEACHER }}%)</span>
           </div>
-          <div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: 7.9%;"></div></div>
+          <div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: {{ metrics.role_pct.TEACHER }}%;"></div></div>
         </div>
 
         <div>
           <div class="flex items-center justify-between text-sm" style="margin-bottom: 0.25rem;">
-            <span><strong>Office Staff &amp; Accounts Officers</strong> (`office_staff`)</span>
-            <span class="font-bold text-main">58 (4.1%)</span>
+            <span><strong>Office Staff &amp; Finance</strong> (<code>OFFICE_STAFF</code>)</span>
+            <span class="font-bold text-main">{{ metrics.role_counts.OFFICE_STAFF }} ({{ metrics.role_pct.OFFICE_STAFF }}%)</span>
           </div>
-          <div class="progress progress-lg"><div class="progress-bar progress-bar-warning" style="width: 4.1%;"></div></div>
+          <div class="progress progress-lg"><div class="progress-bar progress-bar-warning" style="width: {{ metrics.role_pct.OFFICE_STAFF }}%;"></div></div>
         </div>
 
         <div>
           <div class="flex items-center justify-between text-sm" style="margin-bottom: 0.25rem;">
-            <span><strong>System Administrators</strong> (`admins`)</span>
-            <span class="font-bold text-main">8 (0.6%)</span>
+            <span><strong>System Administrators</strong> (<code>ADMIN</code>)</span>
+            <span class="font-bold text-main">{{ metrics.role_counts.ADMIN }} ({{ metrics.role_pct.ADMIN }}%)</span>
           </div>
-          <div class="progress progress-lg"><div class="progress-bar progress-bar-danger" style="width: 2%;"></div></div>
+          <div class="progress progress-lg"><div class="progress-bar progress-bar-danger" style="width: {{ metrics.role_pct.ADMIN }}%;"></div></div>
         </div>
       </div>
     </div>
@@ -155,7 +295,7 @@
     <div class="card-header">
       <h2 class="card-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        Faculty Specialization Tiers (112 Total)
+        Faculty Specialization Tiers ({{ metrics.total_faculty }} Total)
       </h2>
       <span class="badge badge-purple">Academic Model</span>
     </div>
@@ -164,40 +304,92 @@
         <div style="background-color: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border-left: 3px solid #8b5cf6;">
           <div class="flex items-center justify-between">
             <div>
-              <div class="font-bold text-main">Permanent Faculty (`permanent_faculty`)</div>
-              <div class="text-xs text-muted">Tenured Senior Faculty • Provident Fund &amp; Pension Enrolled</div>
+              <div class="font-bold text-main">Permanent Faculty (<code>permanent_faculty</code>)</div>
+              <div class="text-xs text-muted">Tenured Senior Faculty &bull; Provident Fund &amp; Pension Enrolled</div>
             </div>
-            <strong class="text-lg" style="color: #6d28d9;">54</strong>
+            <strong class="text-lg" style="color: #6d28d9;">{{ metrics.perm_faculty }}</strong>
           </div>
         </div>
 
         <div style="background-color: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border-left: 3px solid #2563eb;">
           <div class="flex items-center justify-between">
             <div>
-              <div class="font-bold text-main">Assistant Professors (`assistant_professors`)</div>
-              <div class="text-xs text-muted">Tenure-Track on Probation • Assigned Senior Mentors &amp; Quotas</div>
+              <div class="font-bold text-main">Assistant Professors (<code>assistant_professors</code>)</div>
+              <div class="text-xs text-muted">Tenure-Track on Probation &bull; Assigned Senior Mentors &amp; Quotas</div>
             </div>
-            <strong class="text-lg text-primary">38</strong>
+            <strong class="text-lg text-primary">{{ metrics.asst_faculty }}</strong>
           </div>
         </div>
 
         <div style="background-color: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border-left: 3px solid #f59e0b;">
           <div class="flex items-center justify-between">
             <div>
-              <div class="font-bold text-main">Visiting Professors (`visiting_professors`)</div>
-              <div class="text-xs text-muted">Adjunct/Contractual • Monthly Honorarium &amp; Home Affiliations</div>
+              <div class="font-bold text-main">Visiting Professors (<code>visiting_professors</code>)</div>
+              <div class="text-xs text-muted">Adjunct/Contractual &bull; Monthly Honorarium &amp; Home Affiliations</div>
             </div>
-            <strong class="text-lg text-warning">20</strong>
+            <strong class="text-lg text-warning">{{ metrics.visit_faculty }}</strong>
           </div>
         </div>
       </div>
     </div>
     <div class="card-footer">
-      <a href="{% url 'core_admin:users' %}" class="text-sm font-semibold">
+      <a href="{% url 'core_admin:users' %}?role=TEACHER" class="text-sm font-semibold">
         Inspect Faculty Subtypes &amp; Mentorship Allocations &rarr;
       </a>
     </div>
   </div>
 </div>
-{% endblock %}
 
+<!-- ======================================================================
+     4. RECENT ADMINISTRATIVE AUDIT TRAIL
+     ====================================================================== -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Recent Administrative Audit Trail
+    </h2>
+    <a href="{% url 'core_admin:audit_logs' %}" class="btn btn-outline btn-sm">View Complete Log</a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Administrator</th>
+            <th>Action Type</th>
+            <th>Target Entity</th>
+            <th>Status</th>
+            <th>Client IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td class="text-muted text-xs">{{ log.created_at|date:"M d, Y H:i:s" }}</td>
+            <td><strong>{{ log.admin.user.username|default:"System Admin" }}</strong></td>
+            <td><span class="badge badge-info">{{ log.get_action_type_display|default:log.action_type }}</span></td>
+            <td><code>{{ log.target_entity }}</code></td>
+            <td>
+              {% if log.status == 'EXECUTED' %}
+                <span class="badge badge-success">EXECUTED</span>
+              {% elif log.status == 'REJECTED_BAD_CONFIRMATION' %}
+                <span class="badge badge-warning">REJECTED</span>
+              {% else %}
+                <span class="badge badge-danger">{{ log.status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-muted text-xs">{{ log.ip_address }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center p-4 text-muted">No recent administrative audit records found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

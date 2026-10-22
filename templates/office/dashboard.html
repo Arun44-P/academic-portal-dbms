@@ -1,201 +1,592 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Office Operations Dashboard{% endblock %}
-{% block breadcrumb %}Office Staff / Operations Overview{% endblock %}
+{% block title %}Student Fee Management | ACADEMIA{% endblock %}
+{% block breadcrumb %}Office Staff / Student Fee Management{% endblock %}
 
 {% block content %}
+<!-- Page Header -->
 <div class="page-header">
   <div>
-    <h1 class="page-header-title">Academic Administration &amp; Accounts Dashboard</h1>
-    <p class="text-sm text-muted">Operations management: fee collection, room scheduling, student records, and registration clearance.</p>
+    <h1 class="page-header-title">Student Fee Management</h1>
+    <p class="text-sm text-muted">Monitor tuition payments, outstanding balances, and student fee records.</p>
   </div>
-  
+  <div class="page-header-actions">
+    <a href="{% url 'office:payment_history' %}" class="btn btn-outline btn-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Payment Ledger</span>
+    </a>
+    <a href="{% url 'office:schedule' %}" class="btn btn-outline btn-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Timetable &amp; Rooms</span>
+    </a>
+  </div>
 </div>
 
-<!-- 4 Key Office Metrics -->
+<!-- 4 Key Financial Summary Cards (Phase 2) -->
 <div class="stats-grid">
-  <!-- Metric 1: Academic Programs -->
+  <!-- Card 1: Total Outstanding Fees -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Academic Departments &amp; Programs</div>
-        <div class="stat-value text-primary">3 Depts • 2 Programs</div>
-      </div>
-      <div class="stat-icon stat-icon-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      </div>
-    </div>
-    <div class="stat-footer">
-      <span class="badge badge-success">CSE, IT &amp; ECE</span>
-      <span class="text-muted">B.Tech Degrees</span>
-    </div>
-  </div>
-      <div class="stat-icon stat-icon-warning">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-    </div>
-    <div class="stat-footer">
-      <span class="badge badge-warning">3 Claims Approved by PIs</span>
-      <span class="text-muted">Awaiting release</span>
-    </div>
-  </div>
-
-  <!-- Metric 2: Unpaid Student Dues -->
-  <div class="stat-card">
-    <div class="stat-card-top">
-      <div>
-        <div class="stat-label">Pending Tuition Dues</div>
-        <div class="stat-value text-danger">₹4,25,000</div>
+        <div class="stat-label">Total Outstanding Fees</div>
+        <div class="stat-value text-danger">₹{{ summary.total_outstanding|floatformat:2 }}</div>
       </div>
       <div class="stat-icon stat-icon-danger">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-negative">12 Students Defaulters</span>
-      <span class="text-muted">Fine applicable</span>
+      <span class="stat-delta delta-negative">{{ summary.students_pending }} Students Due</span>
+      <span class="text-muted">Uncollected Dues</span>
     </div>
   </div>
 
-  <!-- Metric 3: Classroom Utilization -->
+  <!-- Card 2: Students With Pending Fees -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Lecture Hall Utilization</div>
-        <div class="stat-value">84.2%</div>
+        <div class="stat-label">Students With Pending Fees</div>
+        <div class="stat-value text-warning">{{ summary.students_pending }} <span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/ {{ summary.total_students }}</span></div>
       </div>
-      <div class="stat-icon stat-icon-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="stat-icon stat-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="badge badge-success">0 Schedule Clashes</span>
-      <span class="text-muted">24 Rooms Booked</span>
+      <span class="badge badge-warning">{{ summary.overdue_count }} Overdue Defaulters</span>
+      <span class="text-muted">Active Roll</span>
     </div>
   </div>
 
-  <!-- Metric 4: Active Enrollments -->
+  <!-- Card 3: Total Fees Collected -->
   <div class="stat-card">
     <div class="stat-card-top">
       <div>
-        <div class="stat-label">Active Student Registry</div>
-        <div class="stat-value">1,240</div>
+        <div class="stat-label">Total Fees Collected</div>
+        <div class="stat-value text-success">₹{{ summary.total_collected|floatformat:2 }}</div>
       </div>
-      <div class="stat-icon stat-icon-purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <div class="stat-icon stat-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
     </div>
     <div class="stat-footer">
-      <span class="stat-delta delta-positive">Autumn 2026-27</span>
-      <span class="text-muted">UG &amp; PG</span>
+      <span class="stat-delta delta-positive">{{ summary.collection_rate }}% Rate</span>
+      <span class="text-muted">Bank Cleared</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Overdue Student Accounts -->
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Overdue Student Accounts</div>
+        <div class="stat-value {% if summary.overdue_count > 0 %}text-danger{% else %}text-primary{% endif %}">{{ summary.overdue_count }}</div>
+      </div>
+      <div class="stat-icon {% if summary.overdue_count > 0 %}stat-icon-danger{% else %}stat-icon-primary{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge {% if summary.overdue_count > 0 %}badge-danger{% else %}badge-success{% endif %}">
+        {% if summary.overdue_count > 0 %}Requires Late Notice{% else %}No Defaulters{% endif %}
+      </span>
+      <span class="text-muted">Past Due Date</span>
     </div>
   </div>
 </div>
 
-<!-- Two-Column Operations Layout -->
-<div class="grid-2-col">
-  <!-- Academic Course Offerings Summary -->
-  <div class="card">
-    <div class="card-header">
+<!-- Main Section: Student Fee Records (Phase 3 & 4) -->
+<div class="card" id="fee-records" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
       <h2 class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Autumn Term Course Offerings
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Student Fee Records
       </h2>
-      <a href="{% url 'office:schedule' %}" class="btn btn-outline btn-sm">Full Schedule</a>
+      <p class="card-subtitle">Official institutional fee records, student dues ledger, and payment tracking.</p>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Course</th>
-              <th>Department</th>
-              <th>Instructor</th>
-              <th>Room</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <div class="font-bold">CS301: DBMS</div>
-                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
-              </td>
-              <td><span class="table-code">CSE</span></td>
-              <td><strong>Dr. Yatendra Sahu</strong></td>
-              <td><span class="badge badge-neutral">LH-302</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="font-bold">CS311: DBMS Lab</div>
-                <div class="text-xs text-muted">Practical • 2 Credits</div>
-              </td>
-              <td><span class="table-code">CSE</span></td>
-              <td><strong>Dr. Yatendra Sahu</strong></td>
-              <td><span class="badge badge-neutral">LAB-4</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="font-bold">CS302: Operating Systems</div>
-                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
-              </td>
-              <td><span class="table-code">CSE</span></td>
-              <td><strong>Dr. Rahul Chaurasia</strong></td>
-              <td><span class="badge badge-neutral">LH-101</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="font-bold">CS303: Computer Networks</div>
-                <div class="text-xs text-muted">Core Theory • 4 Credits</div>
-              </td>
-              <td><span class="table-code">CSE</span></td>
-              <td><strong>Dr. Neha Kakkar</strong></td>
-              <td><span class="badge badge-neutral">LH-204</span></td>
-            </tr>
-          </tbody>
-        </table>
+    <span class="badge badge-primary">{{ page_obj.paginator.count }} Student Account{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+
+  <!-- Search & Filter Controls (Phase 4) -->
+  <form method="get" action="{% url 'office:dashboard' %}#fee-records" class="fee-filter-bar">
+    <div class="fee-filter-inputs">
+      <!-- Search Input -->
+      <div class="search-input-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input 
+          type="text" 
+          name="q" 
+          value="{{ search_q }}" 
+          class="form-control" 
+          placeholder="Search by student name, roll number, or department..."
+        >
       </div>
+
+      <!-- Department Filter -->
+      <select name="department" class="fee-filter-select" onchange="this.form.submit()">
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+          <option value="{{ dept.code }}" {% if selected_dept == dept.code %}selected{% endif %}>
+            {{ dept.code }} - {{ dept.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Semester Filter -->
+      <select name="semester" class="fee-filter-select" onchange="this.form.submit()">
+        <option value="">All Semesters</option>
+        {% for sem in semesters %}
+          <option value="{{ sem }}" {% if selected_sem == sem|stringformat:"s" %}selected{% endif %}>
+            Semester {{ sem }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Payment Status Filter -->
+      <select name="status" class="fee-filter-select" onchange="this.form.submit()">
+        <option value="">All Payment Statuses</option>
+        {% for st_code, st_label in status_choices %}
+          <option value="{{ st_code }}" {% if selected_status == st_code %}selected{% endif %}>
+            {{ st_label }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Sorting Filter -->
+      <select name="sort" class="fee-filter-select" onchange="this.form.submit()">
+        <option value="remaining_desc" {% if selected_sort == 'remaining_desc' %}selected{% endif %}>Sort: Highest Remaining Fee</option>
+        <option value="remaining_asc" {% if selected_sort == 'remaining_asc' %}selected{% endif %}>Sort: Lowest Remaining Fee</option>
+        <option value="due_date_asc" {% if selected_sort == 'due_date_asc' %}selected{% endif %}>Sort: Due Date (Earliest)</option>
+        <option value="roll_asc" {% if selected_sort == 'roll_asc' %}selected{% endif %}>Sort: Roll Number</option>
+      </select>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+      {% if search_q or selected_dept or selected_sem or selected_status or selected_sort != 'remaining_desc' %}
+        <a href="{% url 'office:dashboard' %}#fee-records" class="btn btn-outline btn-sm">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Table View -->
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Roll Number</th>
+            <th>Department / Branch</th>
+            <th>Year / Semester</th>
+            <th>Total Fee</th>
+            <th>Amount Paid</th>
+            <th>Remaining Fee</th>
+            <th>Due Date</th>
+            <th>Payment Status</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for acc in page_obj %}
+            <tr>
+              <td>
+                <div class="font-bold text-main">{{ acc.student.user.get_full_name|default:acc.student.user.username }}</div>
+                <div class="text-xs text-muted">{{ acc.student.user.email }}</div>
+              </td>
+              <td><span class="table-code font-bold">{{ acc.student.roll_number }}</span></td>
+              <td>
+                <span class="badge badge-neutral">{{ acc.student.program.department.code }}</span>
+                <span class="text-xs text-muted">{{ acc.student.program.name }}</span>
+              </td>
+              <td>
+                <div class="font-semibold text-sm">Sem {{ acc.student.current_semester }}</div>
+                <div class="text-xs text-muted">{{ acc.semester.get_term_display }} {{ acc.semester.academic_year }}</div>
+              </td>
+              <td><strong>₹{{ acc.net_applicable_fee|floatformat:2 }}</strong></td>
+              <td><strong class="table-amount-cleared">₹{{ acc.total_paid|floatformat:2 }}</strong></td>
+              <td>
+                {% if acc.remaining_fee > 0 %}
+                  <strong class="table-amount-due">₹{{ acc.remaining_fee|floatformat:2 }}</strong>
+                {% else %}
+                  <span class="table-amount-cleared font-bold">₹0.00 (Cleared)</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="text-xs font-semibold">{{ acc.due_date|date:"d M Y"|default:"Not Set" }}</div>
+              </td>
+              <td>
+                {% if acc.status == 'PAID' %}
+                  <span class="badge badge-success">✓ Fully Paid</span>
+                {% elif acc.status == 'PARTIAL' %}
+                  <span class="badge badge-warning">Partial Due</span>
+                {% elif acc.status == 'OVERDUE' %}
+                  <span class="badge badge-danger">⚠ Overdue</span>
+                {% else %}
+                  <span class="badge badge-neutral">Pending Payment</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <div class="fee-table-actions" style="justify-content: flex-end;">
+                  <button 
+                    type="button" 
+                    class="btn btn-outline btn-xs" 
+                    onclick="openFeeDetailModal('{{ acc.id }}')"
+                    title="Inspect breakdown and transaction history"
+                  >
+                    View Details
+                  </button>
+                  {% if acc.remaining_fee > 0 %}
+                    <button 
+                      type="button" 
+                      class="btn btn-primary btn-xs" 
+                      onclick="openRecordPaymentModal('{{ acc.id }}', '{{ acc.student.user.get_full_name|default:acc.student.user.username|escapejs }}', '{{ acc.student.roll_number|escapejs }}', '{{ acc.remaining_fee }}')"
+                      title="Record manual payment at office counter"
+                    >
+                      + Pay
+                    </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 3rem 1.5rem;">
+                <div style="max-width: 420px; margin: 0 auto;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin-bottom: 1rem;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                  <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">No Matching Student Fee Records</h3>
+                  <p class="text-sm text-muted">No student records match the active search query or filters. Clear your filters to view all student tuition records.</p>
+                  <a href="{% url 'office:dashboard' %}#fee-records" class="btn btn-outline btn-sm" style="margin-top: 0.75rem;">Reset Filters</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Operational Short-Cuts & Timetable Health -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Room Scheduling &amp; Facility Allocations
-      </h2>
-      <a href="{% url 'office:schedule' %}" class="btn btn-outline btn-sm">Master Timetable</a>
-    </div>
-    <div class="card-body">
-      <div class="flex items-center justify-between" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-light);">
-        <div>
-          <div class="font-bold text-main">Main Academic Block (LH-1 to LH-6)</div>
-          <div class="text-xs text-muted">6 Lecture Theatres • Total Seats: 420</div>
-        </div>
-        <span class="badge badge-success">92% Utilized</span>
+  <!-- Pagination Controls -->
+  {% if page_obj.has_other_pages %}
+    <div class="card-footer" style="background-color: #ffffff;">
+      <div class="text-xs text-muted">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} student accounts
       </div>
-      <div class="flex items-center justify-between" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-light);">
-        <div>
-          <div class="font-bold text-main">Computing &amp; DBMS Laboratories (LAB-1 to LAB-5)</div>
-          <div class="text-xs text-muted">180 Workstations with Gigabit LAN</div>
-        </div>
-        <span class="badge badge-success">88% Utilized</span>
-      </div>
-      <div class="flex items-center justify-between" style="padding: 0.75rem 0;">
-        <div>
-          <div class="font-bold text-main">Seminar Hall &amp; Auditorium</div>
-          <div class="text-xs text-muted">Available for guest lectures &amp; symposiums</div>
-        </div>
-        <span class="badge badge-info">Available 03:00 PM</span>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&q={{ search_q }}&department={{ selected_dept }}&semester={{ selected_sem }}&status={{ selected_status }}&sort={{ selected_sort }}#fee-records" class="btn btn-outline btn-xs">
+            &larr; Previous
+          </a>
+        {% endif %}
+        <span class="text-xs font-semibold" style="padding: 0 0.5rem;">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&q={{ search_q }}&department={{ selected_dept }}&semester={{ selected_sem }}&status={{ selected_status }}&sort={{ selected_sort }}#fee-records" class="btn btn-outline btn-xs">
+            Next &rarr;
+          </a>
+        {% endif %}
       </div>
     </div>
-    <div class="card-footer">
-      <a href="{% url 'office:schedule' %}" class="text-sm font-semibold">
-        Inspect Room Clashes &amp; Weekly Grid &rarr;
-      </a>
+  {% endif %}
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: STUDENT FEE DETAILS & TRANSACTION BREAKDOWN (PHASE 5)            -->
+<!-- ========================================================================= -->
+<div id="feeDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feeDetailTitle">
+  <div class="modal-backdrop" onclick="closeFeeDetailModal()"></div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="feeDetailTitle">Student Fee Statement &amp; Breakdown</h3>
+        <p class="text-xs text-muted" id="modalStudentHeaderSubtitle">Detailed tuition and transaction ledger</p>
+      </div>
+      <button type="button" class="modal-close" onclick="closeFeeDetailModal()" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body" id="feeDetailModalBody">
+      <div style="text-align: center; padding: 2rem;">
+        <span class="text-muted">Loading student financial records...</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeFeeDetailModal()">Close</button>
+      <button type="button" class="btn btn-primary btn-sm" id="modalRecordPaymentShortcut" style="display: none;">Record Payment</button>
     </div>
   </div>
 </div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: CONTROLLED MANUAL PAYMENT RECORDING (PHASE 6)                     -->
+<!-- ========================================================================= -->
+<div id="recordPaymentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recordPaymentTitle">
+  <div class="modal-backdrop" onclick="closeRecordPaymentModal()"></div>
+  <div class="modal-dialog">
+    <form id="recordPaymentForm" method="post" action="">
+      {% csrf_token %}
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="recordPaymentTitle">Record Counter Fee Payment</h3>
+          <p class="text-xs text-muted">Institutional desk payment logging with atomic audit validation</p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeRecordPaymentModal()" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background-color: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; border: 1px solid var(--border-light);">
+          <div class="flex justify-between items-center" style="margin-bottom: 0.25rem;">
+            <span class="text-xs text-muted">Student:</span>
+            <strong id="payStudentName" class="text-sm text-main">-</strong>
+          </div>
+          <div class="flex justify-between items-center" style="margin-bottom: 0.25rem;">
+            <span class="text-xs text-muted">Roll Number:</span>
+            <span id="payStudentRoll" class="table-code font-bold">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-muted">Outstanding Due:</span>
+            <strong id="payStudentRemaining" class="text-danger font-bold">-</strong>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" for="payAmountInput">Payment Amount (INR ₹) <span class="text-danger">*</span></label>
+          <input 
+            type="number" 
+            step="0.01" 
+            min="1" 
+            name="amount" 
+            id="payAmountInput" 
+            class="form-control" 
+            required 
+            placeholder="e.g. 50000"
+          >
+          <span class="text-xs text-muted">Amount cannot exceed remaining balance.</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" for="payMethodSelect">Payment Instrument / Mode <span class="text-danger">*</span></label>
+          <select name="payment_method" id="payMethodSelect" class="form-control" required>
+            {% for m_code, m_name in payment_methods %}
+              <option value="{{ m_code }}">{{ m_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" for="payRefInput">Transaction Reference / UTR Number</label>
+          <input 
+            type="text" 
+            name="transaction_reference" 
+            id="payRefInput" 
+            class="form-control" 
+            placeholder="Leave blank to auto-generate official slip reference"
+          >
+          <span class="text-xs text-muted">Bank UTR, Challan No, or SBI Collect Reference. Must be unique.</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <label class="form-label" for="payRemarksInput">Remarks / Administrative Notes</label>
+          <textarea 
+            name="remarks" 
+            id="payRemarksInput" 
+            class="form-control" 
+            rows="2" 
+            placeholder="e.g. Semester 5 installment paid at accounts desk via SBI Collect"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeRecordPaymentModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Confirm &amp; Record Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Fee Details Modal Logic (Phase 5)
+  function openFeeDetailModal(accountId) {
+    const modal = document.getElementById('feeDetailModal');
+    const body = document.getElementById('feeDetailModalBody');
+    const subtitle = document.getElementById('modalStudentHeaderSubtitle');
+    const payShortcut = document.getElementById('modalRecordPaymentShortcut');
+
+    modal.classList.add('is-open');
+    body.innerHTML = '<div style="text-align: center; padding: 2.5rem;"><span class="text-muted">Loading fee breakdown and transactions...</span></div>';
+
+    fetch('/office-portal/fee-account/' + accountId + '/?format=json', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        body.innerHTML = '<div class="alert alert-danger">Error retrieving fee details.</div>';
+        return;
+      }
+
+      subtitle.innerText = data.student_name + ' (' + data.roll_number + ') • ' + data.department;
+
+      let statusBadge = '<span class="badge badge-neutral">' + data.status_display + '</span>';
+      if (data.status === 'PAID') statusBadge = '<span class="badge badge-success">✓ Fully Paid</span>';
+      else if (data.status === 'PARTIAL') statusBadge = '<span class="badge badge-warning">Partial Due</span>';
+      else if (data.status === 'OVERDUE') statusBadge = '<span class="badge badge-danger">⚠ Overdue</span>';
+
+      let paymentsHtml = '';
+      if (data.payments && data.payments.length > 0) {
+        paymentsHtml = `
+          <div class="table-responsive" style="margin-top: 1rem;">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date &amp; Time</th>
+                  <th>Transaction Ref</th>
+                  <th>Receipt No</th>
+                  <th>Mode</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Recorded By</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.payments.map(p => `
+                  <tr>
+                    <td><div class="text-xs font-semibold">${p.date}</div></td>
+                    <td><span class="table-code font-bold">${p.reference}</span></td>
+                    <td><span class="text-xs font-bold text-primary">${p.receipt}</span></td>
+                    <td><span class="badge badge-neutral">${p.method}</span></td>
+                    <td><strong class="text-success">₹${p.amount}</strong></td>
+                    <td><span class="badge badge-success">${p.status}</span></td>
+                    <td><span class="text-xs text-muted">${p.recorded_by}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        paymentsHtml = '<div class="text-sm text-muted" style="padding: 1rem; text-align: center; background: var(--bg-surface-alt); border-radius: var(--radius-sm); margin-top: 0.75rem;">No payments have been recorded yet for this semester.</div>';
+      }
+
+      body.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+            <div class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Student Identification</div>
+            <div class="font-bold text-main" style="font-size: 1.05rem; margin-top: 0.25rem;">${data.student_name}</div>
+            <div class="text-xs text-muted">Roll: <strong>${data.roll_number}</strong> | Reg: ${data.registration_number}</div>
+            <div class="text-xs text-muted">${data.program}</div>
+          </div>
+          <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700;">Account Balance Status</div>
+              <div class="flex items-center gap-2" style="margin-top: 0.25rem;">
+                ${statusBadge}
+                <span class="text-xs text-muted">Due Date: <strong>${data.due_date}</strong></span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center" style="margin-top: 0.5rem; border-top: 1px solid var(--border-light); padding-top: 0.35rem;">
+              <span class="text-xs text-muted">Outstanding:</span>
+              <strong class="${parseFloat(data.remaining_fee.replace(/,/g, '')) > 0 ? 'text-danger' : 'text-success'}" style="font-size: 1.15rem;">₹${data.remaining_fee}</strong>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.65rem; color: var(--text-main);">Fee Head-Wise Breakdown</h4>
+        <div class="table-responsive" style="margin-bottom: 1.5rem;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Prescribed Fee</th>
+                <th>Fee Concessions</th>
+                <th>Net Applicable</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Tuition &amp; Academic Instruction</strong></td>
+                <td>₹${data.tuition_fee}</td>
+                <td>-</td>
+                <td><strong>₹${data.tuition_fee}</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Hostel Accommodation &amp; Campus Amenities</strong></td>
+                <td>₹${data.hostel_fee}</td>
+                <td>-</td>
+                <td><strong>₹${data.hostel_fee}</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Examinations, Library &amp; Student Welfare</strong></td>
+                <td>₹${data.amenities_exam_fee}</td>
+                <td>-</td>
+                <td><strong>₹${data.amenities_exam_fee}</strong></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr style="background: var(--bg-surface-alt); font-weight: 700;">
+                <td>Total Consolidated</td>
+                <td>₹${data.total_fee}</td>
+                <td class="text-success">- ₹${data.scholarship_concession}</td>
+                <td class="text-primary" style="font-size: 1rem;">₹${data.net_applicable_fee}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Payment Ledger &amp; Counter Transactions</h4>
+        ${paymentsHtml}
+      `;
+
+      if (parseFloat(data.remaining_fee.replace(/,/g, '')) > 0) {
+        payShortcut.style.display = 'inline-flex';
+        payShortcut.onclick = function() {
+          closeFeeDetailModal();
+          openRecordPaymentModal(data.account_id, data.student_name, data.roll_number, data.remaining_fee.replace(/,/g, ''));
+        };
+      } else {
+        payShortcut.style.display = 'none';
+      }
+    })
+    .catch(err => {
+      body.innerHTML = '<div class="alert alert-danger">Network error connecting to accounts server.</div>';
+    });
+  }
+
+  function closeFeeDetailModal() {
+    document.getElementById('feeDetailModal').classList.remove('is-open');
+  }
+
+  // Record Payment Modal Logic (Phase 6)
+  function openRecordPaymentModal(accountId, studentName, rollNumber, remainingFee) {
+    const modal = document.getElementById('recordPaymentModal');
+    const form = document.getElementById('recordPaymentForm');
+    const numRemaining = parseFloat(remainingFee);
+
+    form.action = '/office-portal/fee-account/' + accountId + '/record-payment/';
+    document.getElementById('payStudentName').innerText = studentName;
+    document.getElementById('payStudentRoll').innerText = rollNumber;
+    document.getElementById('payStudentRemaining').innerText = '₹' + numRemaining.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+    const amountInput = document.getElementById('payAmountInput');
+    amountInput.max = numRemaining;
+    amountInput.value = numRemaining;
+
+    document.getElementById('payRefInput').value = '';
+    document.getElementById('payRemarksInput').value = '';
+
+    modal.classList.add('is-open');
+  }
+
+  function closeRecordPaymentModal() {
+    document.getElementById('recordPaymentModal').classList.remove('is-open');
+  }
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeFeeDetailModal();
+      closeRecordPaymentModal();
+    }
+  });
+</script>
 {% endblock %}
-

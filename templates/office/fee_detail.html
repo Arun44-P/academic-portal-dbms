@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Student Fee Statement | ACADEMIA{% endblock %}
+{% block breadcrumb %}Office Staff / <a href="{% url 'office:dashboard' %}">Fee Management</a> / {{ account.student.roll_number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Student Fee Account Statement</h1>
+    <p class="text-sm text-muted">
+      {{ account.student.user.get_full_name|default:account.student.user.username }} 
+      ({{ account.student.roll_number }}) • {{ account.student.program.name }}
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'office:dashboard' %}#fee-records" class="btn btn-outline btn-sm">
+      &larr; Back to Records
+    </a>
+  </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.75rem;">
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Total Prescribed Fee</div>
+        <div class="stat-value">₹{{ account.net_applicable_fee|floatformat:2 }}</div>
+      </div>
+      <div class="stat-icon stat-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="text-muted">Tuition, Hostel &amp; Amenities</span>
+      <span class="text-muted">{{ account.semester }}</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Amount Cleared</div>
+        <div class="stat-value text-success">₹{{ account.total_paid|floatformat:2 }}</div>
+      </div>
+      <div class="stat-icon stat-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge badge-success">{{ account.payments.count }} Confirmed Payment{{ account.payments.count|pluralize }}</span>
+      <span class="text-muted">Bank Verified</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div>
+        <div class="stat-label">Remaining Balance Due</div>
+        <div class="stat-value {% if account.remaining_fee > 0 %}text-danger{% else %}text-success{% endif %}">₹{{ account.remaining_fee|floatformat:2 }}</div>
+      </div>
+      <div class="stat-icon {% if account.remaining_fee > 0 %}stat-icon-danger{% else %}stat-icon-success{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+    </div>
+    <div class="stat-footer">
+      <span class="badge {% if account.status == 'OVERDUE' %}badge-danger{% elif account.status == 'PARTIAL' %}badge-warning{% else %}badge-success{% endif %}">
+        {{ account.get_status_display }}
+      </span>
+      <span class="text-muted">Due: {{ account.due_date|date:"d M Y" }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h2 class="card-title">Fee Head-Wise Breakdown</h2>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Prescribed Amount</th>
+            <th>Fee Concessions</th>
+            <th>Net Applicable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="font-bold">Tuition &amp; Academic Instruction Fee</div>
+              <div class="text-xs text-muted">Core classroom instruction, lab maintenance &amp; software licenses</div>
+            </td>
+            <td>₹{{ account.tuition_fee|floatformat:2 }}</td>
+            <td>-</td>
+            <td><strong>₹{{ account.tuition_fee|floatformat:2 }}</strong></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Hostel Accommodation &amp; Campus Amenities</div>
+              <div class="text-xs text-muted">Campus residence, dining hall &amp; facility maintenance</div>
+            </td>
+            <td>₹{{ account.hostel_fee|floatformat:2 }}</td>
+            <td>-</td>
+            <td><strong>₹{{ account.hostel_fee|floatformat:2 }}</strong></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="font-bold">Examination, Library &amp; Student Welfare Fund</div>
+              <div class="text-xs text-muted">Semester examinations, digital library access &amp; sports</div>
+            </td>
+            <td>₹{{ account.amenities_exam_fee|floatformat:2 }}</td>
+            <td>-</td>
+            <td><strong>₹{{ account.amenities_exam_fee|floatformat:2 }}</strong></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background: var(--bg-surface-alt); font-weight: 700;">
+            <td>Total Consolidated Academic Fee</td>
+            <td>₹{{ account.total_fee|floatformat:2 }}</td>
+            <td class="text-success">- ₹{{ account.scholarship_concession|floatformat:2 }}</td>
+            <td class="text-primary font-bold">₹{{ account.net_applicable_fee|floatformat:2 }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <h2 class="card-title">Recorded Transactions Ledger</h2>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Receipt No</th>
+            <th>Reference Code</th>
+            <th>Mode</th>
+            <th>Amount Paid</th>
+            <th>Status</th>
+            <th>Recorded By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+            <tr>
+              <td><div class="text-xs font-semibold">{{ p.payment_date|date:"d M Y, h:i A" }}</div></td>
+              <td><span class="text-xs font-bold text-primary">{{ p.receipt_number }}</span></td>
+              <td><span class="table-code font-bold">{{ p.transaction_reference }}</span></td>
+              <td><span class="badge badge-neutral">{{ p.get_payment_method_display }}</span></td>
+              <td><strong class="text-success">₹{{ p.amount|floatformat:2 }}</strong></td>
+              <td><span class="badge badge-success">{{ p.get_status_display }}</span></td>
+              <td><span class="text-xs text-muted">{{ p.recorded_by.user.get_full_name|default:p.recorded_by.user.username|default:"System Gateway" }}</span></td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem;">
+                <p class="text-muted">No payments recorded for this account yet.</p>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment History | Office Staff | ACADEMIA{% endblock %}
+{% block breadcrumb %}Office Staff / Payment History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Fee Payment Ledger &amp; Transactions</h1>
+    <p class="text-sm text-muted">Complete audit trail of all student tuition payments and counter collections.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'office:dashboard' %}" class="btn btn-outline btn-sm">
+      &larr; Back to Fee Management
+    </a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Institutional Transaction Records
+      </h2>
+      <p class="card-subtitle">Total Confirmed Collections: <strong class="text-success">₹{{ total_amount|floatformat:2 }}</strong></p>
+    </div>
+    <span class="badge badge-primary">{{ page_obj.paginator.count }} Recorded Payment{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+
+  <form method="get" action="{% url 'office:payment_history' %}" class="fee-filter-bar">
+    <div class="search-input-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input 
+        type="text" 
+        name="q" 
+        value="{{ search_q }}" 
+        class="form-control" 
+        placeholder="Search by transaction reference, receipt number, student name, or roll number..."
+      >
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      {% if search_q %}
+        <a href="{% url 'office:payment_history' %}" class="btn btn-outline btn-sm">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Receipt No</th>
+            <th>Transaction Reference</th>
+            <th>Student</th>
+            <th>Program / Dept</th>
+            <th>Payment Mode</th>
+            <th>Amount Paid</th>
+            <th>Status</th>
+            <th>Recorded By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in page_obj %}
+            <tr>
+              <td>
+                <div class="text-xs font-semibold">{{ p.payment_date|date:"d M Y, h:i A" }}</div>
+              </td>
+              <td><span class="text-xs font-bold text-primary">{{ p.receipt_number }}</span></td>
+              <td><span class="table-code font-bold">{{ p.transaction_reference }}</span></td>
+              <td>
+                <div class="font-bold text-main">{{ p.fee_account.student.user.get_full_name|default:p.fee_account.student.user.username }}</div>
+                <div class="text-xs text-muted">{{ p.fee_account.student.roll_number }}</div>
+              </td>
+              <td>
+                <span class="badge badge-neutral">{{ p.fee_account.student.program.department.code }}</span>
+                <span class="text-xs text-muted">Sem {{ p.fee_account.student.current_semester }}</span>
+              </td>
+              <td><span class="badge badge-neutral">{{ p.get_payment_method_display }}</span></td>
+              <td><strong class="text-success" style="font-size: 0.95rem;">₹{{ p.amount|floatformat:2 }}</strong></td>
+              <td>
+                {% if p.status == 'CONFIRMED' %}
+                  <span class="badge badge-success">✓ Cleared</span>
+                {% elif p.status == 'REFUNDED' %}
+                  <span class="badge badge-danger">Refunded</span>
+                {% else %}
+                  <span class="badge badge-warning">Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="text-xs font-semibold">{{ p.recorded_by.user.get_full_name|default:p.recorded_by.user.username|default:"System Gateway" }}</div>
+                {% if p.remarks %}
+                  <div class="text-xs text-muted" title="{{ p.remarks }}">{{ p.remarks|truncatechars:28 }}</div>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" style="text-align: center; padding: 3rem 1.5rem;">
+                <p class="text-muted">No fee payment transactions found.</p>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="card-footer" style="background-color: #ffffff;">
+      <div class="text-xs text-muted">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} transactions
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&q={{ search_q }}" class="btn btn-outline btn-xs">&larr; Previous</a>
+        {% endif %}
+        <span class="text-xs font-semibold">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&q={{ search_q }}" class="btn btn-outline btn-xs">Next &rarr;</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
