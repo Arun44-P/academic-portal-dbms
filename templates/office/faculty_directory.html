@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Faculty Directory | ACADEMIA{% endblock %}
+{% block breadcrumb %}Office Staff / Faculty Directory{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Institutional Faculty Directory</h1>
+    <p class="text-sm text-muted">Read-only academic staff directory with department affiliations and teaching assignments.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'office:student_directory' %}" class="btn btn-outline btn-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Student Directory</span>
+    </a>
+  </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="card-body" style="padding: 1.25rem;">
+    <form method="GET" action="{% url 'office:faculty_directory' %}" class="flex items-center gap-3 flex-wrap">
+      <!-- Search Input -->
+      <div class="search-box" style="flex: 1; min-width: 260px;">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search by name, employee code, email, or department...">
+      </div>
+
+      <!-- Department Filter -->
+      <select name="department" class="form-select form-select-sm" style="width: auto;">
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+          <option value="{{ dept.code }}" {% if selected_dept == dept.code %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Category Filter -->
+      <select name="category" class="form-select form-select-sm" style="width: auto;">
+        <option value="">All Designations</option>
+        <option value="PERMANENT" {% if selected_category == 'PERMANENT' %}selected{% endif %}>Permanent Faculty</option>
+        <option value="ASSISTANT" {% if selected_category == 'ASSISTANT' %}selected{% endif %}>Assistant Professor</option>
+        <option value="VISITING" {% if selected_category == 'VISITING' %}selected{% endif %}>Visiting Professor</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+      {% if search_q or selected_dept or selected_category %}
+        <a href="{% url 'office:faculty_directory' %}" class="btn btn-outline btn-sm">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Faculty Roster Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Teaching Faculty ({{ total_count }} records)</h2>
+    <span class="text-xs text-muted">Read-Only Institutional Roster • Access Level: Office Staff</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="width: 140px;">Employee ID</th>
+            <th>Faculty Member &amp; Email</th>
+            <th>Department</th>
+            <th>Category &amp; Designation</th>
+            <th>Office Room</th>
+            <th style="text-align: center;">Assigned Offerings</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fac in page_obj %}
+          <tr>
+            <td><span class="table-code font-bold">{{ fac.employee_code }}</span></td>
+            <td>
+              <div class="font-bold text-main">{{ fac.user.get_full_name|default:fac.user.username }}</div>
+              <div class="text-xs text-muted">{{ fac.user.email|default:"No email registered" }}</div>
+            </td>
+            <td>
+              <div class="font-semibold">{{ fac.department.name }}</div>
+              <div class="text-xs text-muted">Code: {{ fac.department.code }}</div>
+            </td>
+            <td>
+              <div>{{ fac.designation }}</div>
+              <span class="badge badge-purple" style="font-size: 0.72rem;">{{ fac.get_faculty_category_display }}</span>
+            </td>
+            <td>
+              <span class="text-sm font-semibold">{{ fac.office_room|default:"Main Wing" }}</span>
+            </td>
+            <td style="text-align: center;">
+              <span class="badge badge-info">{{ fac.offerings.count }} active sections</span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center p-4 text-muted">No faculty members found matching search and filter criteria.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer">
+    <div class="flex items-center justify-between w-full">
+      <span class="text-xs text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      <div class="flex items-center gap-1">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&q={{ search_q }}&department={{ selected_dept }}&category={{ selected_category }}" class="btn btn-outline btn-xs">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&q={{ search_q }}&department={{ selected_dept }}&category={{ selected_category }}" class="btn btn-outline btn-xs">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

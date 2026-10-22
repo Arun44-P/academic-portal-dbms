@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Student Directory | ACADEMIA{% endblock %}
+{% block breadcrumb %}Office Staff / Student Directory{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header-title">Institutional Student Directory</h1>
+    <p class="text-sm text-muted">Read-only student roster with academic enrollment, current semester, and balance summary.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{% url 'office:dashboard' %}" class="btn btn-outline btn-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <span>Fee Management</span>
+    </a>
+  </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="card-body" style="padding: 1.25rem;">
+    <form method="GET" action="{% url 'office:student_directory' %}" class="flex items-center gap-3 flex-wrap">
+      <!-- Search Input -->
+      <div class="search-box" style="flex: 1; min-width: 260px;">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search by name, roll no, email, or program...">
+      </div>
+
+      <!-- Department Filter -->
+      <select name="department" class="form-select form-select-sm" style="width: auto;">
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+          <option value="{{ dept.code }}" {% if selected_dept == dept.code %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Semester Filter -->
+      <select name="semester" class="form-select form-select-sm" style="width: auto;">
+        <option value="">All Semesters</option>
+        {% for s in "12345678" %}
+          <option value="{{ s }}" {% if selected_sem == s %}selected{% endif %}>Semester {{ s }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Status Filter -->
+      <select name="status" class="form-select form-select-sm" style="width: auto;">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE" {% if selected_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+        <option value="INACTIVE" {% if selected_status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+        <option value="SUSPENDED" {% if selected_status == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+      {% if search_q or selected_dept or selected_sem or selected_status %}
+        <a href="{% url 'office:student_directory' %}" class="btn btn-outline btn-sm">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Student Roster Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Enrolled Students ({{ total_count }} records)</h2>
+    <span class="text-xs text-muted">Read-Only Institutional Roster • Access Level: Office Staff</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="width: 140px;">Roll Number</th>
+            <th>Student Name &amp; Email</th>
+            <th>Program &amp; Department</th>
+            <th style="text-align: center;">Semester</th>
+            <th style="text-align: center;">Academic Status</th>
+            <th style="text-align: right;">Outstanding Dues</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in page_obj %}
+          <tr>
+            <td><span class="table-code font-bold">{{ student.roll_number }}</span></td>
+            <td>
+              <div class="font-bold text-main">{{ student.user.get_full_name|default:student.user.username }}</div>
+              <div class="text-xs text-muted">{{ student.user.email|default:"No institutional email" }}</div>
+            </td>
+            <td>
+              <div class="font-semibold">{{ student.program.name }}</div>
+              <div class="text-xs text-muted">{{ student.program.department.name }} ({{ student.program.department.code }})</div>
+            </td>
+            <td style="text-align: center;">
+              <span class="badge badge-neutral">Sem {{ student.current_semester }}</span>
+            </td>
+            <td style="text-align: center;">
+              {% if student.status == 'ACTIVE' %}
+                <span class="badge badge-success"><span class="badge-dot"></span> Active</span>
+              {% elif student.status == 'INACTIVE' %}
+                <span class="badge badge-danger"><span class="badge-dot"></span> Inactive</span>
+              {% else %}
+                <span class="badge badge-warning"><span class="badge-dot"></span> {{ student.status }}</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right;">
+              {% with acc=student.fee_accounts.first %}
+                {% if acc %}
+                  {% if acc.remaining_fee > 0 %}
+                    <span class="font-bold text-danger">₹{{ acc.remaining_fee|floatformat:2 }}</span>
+                  {% else %}
+                    <span class="badge badge-success">Clear</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-muted text-xs">No ledger</span>
+                {% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center p-4 text-muted">No students matching the specified search and filter criteria.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer">
+    <div class="flex items-center justify-between w-full">
+      <span class="text-xs text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      <div class="flex items-center gap-1">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&q={{ search_q }}&department={{ selected_dept }}&semester={{ selected_sem }}&status={{ selected_status }}" class="btn btn-outline btn-xs">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&q={{ search_q }}&department={{ selected_dept }}&semester={{ selected_sem }}&status={{ selected_status }}" class="btn btn-outline btn-xs">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

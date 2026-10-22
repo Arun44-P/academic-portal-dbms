@@ -29,7 +29,7 @@
        ====================================================================== -->
   <aside class="app-sidebar" aria-label="Main Navigation">
     <div class="sidebar-header">
-      <a href="{% if user.role == 'STUDENT' %}{% url 'student:dashboard' %}{% elif user.role == 'TEACHER' %}{% url 'teacher:dashboard' %}{% elif user.role == 'OFFICE' or user.role == 'OFFICE_STAFF' %}{% url 'office:dashboard' %}{% elif user.role == 'ADMIN' %}{% url 'core_admin:dashboard' %}{% else %}#{% endif %}" class="sidebar-brand">
+      <a href="{% if user.is_student %}{% url 'student:dashboard' %}{% elif user.is_faculty %}{% url 'teacher:dashboard' %}{% elif user.is_office_staff %}{% url 'office:dashboard' %}{% elif user.is_administrator %}{% url 'core_admin:dashboard' %}{% else %}#{% endif %}" class="sidebar-brand">
         <div class="sidebar-brand-logo" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -45,7 +45,7 @@
 
     <!-- Navigation Groups based on User Role -->
     <nav class="sidebar-nav">
-      {% if user.role == 'STUDENT' %}
+      {% if user.is_student %}
         <!-- ---------------- Student Role Navigation ---------------- -->
         <div class="nav-section-title">Student Academic</div>
         <a href="{% url 'student:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
@@ -65,7 +65,7 @@
           <span>Fee &amp; Dues Status</span>
         </a>
 
-      {% elif user.role == 'TEACHER' %}
+      {% elif user.is_faculty %}
         <!-- ---------------- Teacher (Faculty) Navigation ---------------- -->
         <div class="nav-section-title">Instruction &amp; Teaching</div>
         <a href="{% url 'teacher:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
@@ -85,7 +85,7 @@
           <span>Assessment &amp; Marks</span>
         </a>
 
-      {% elif user.role == 'OFFICE' or user.role == 'OFFICE_STAFF' %}
+      {% elif user.is_office_staff %}
         <!-- ---------------- Office Staff Navigation ---------------- -->
         <div class="nav-section-title">Fee &amp; Accounts</div>
         <a href="{% url 'office:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'fee_records' %}active{% endif %}">
@@ -101,13 +101,23 @@
           <span>Payment History</span>
         </a>
 
+        <div class="nav-section-title">Institutional Directories</div>
+        <a href="{% url 'office:student_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'student_directory' %}active{% endif %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Student Directory</span>
+        </a>
+        <a href="{% url 'office:faculty_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'faculty_directory' %}active{% endif %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Faculty Directory</span>
+        </a>
+
         <div class="nav-section-title">Operations</div>
         <a href="{% url 'office:schedule' %}" class="nav-link {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span>Timetable &amp; Rooms</span>
         </a>
 
-      {% elif user.role == 'ADMIN' %}
+      {% elif user.is_administrator %}
         <!-- ---------------- Admin Navigation ---------------- -->
         <div class="nav-section-title">System Governance</div>
         <a href="{% url 'core_admin:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
@@ -144,7 +154,7 @@
           {{ user.first_name|default:user.username|slice:":1"|upper|default:"U" }}
         </div>
         <div class="sidebar-user-info">
-          <div class="sidebar-user-name">{% if user.role == 'TEACHER' and 'Dr.' not in user.get_full_name and 'Prof.' not in user.get_full_name %}Dr. {% endif %}{{ user.get_full_name|default:user.username|default:"Active User" }}</div>
+          <div class="sidebar-user-name">{% if user.is_faculty and 'Dr.' not in user.get_full_name and 'Prof.' not in user.get_full_name %}Dr. {% endif %}{{ user.get_full_name|default:user.username|default:"Active User" }}</div>
           <span class="sidebar-user-role">{{ user.get_role_display|default:user.role|default:"AUTHENTICATED" }}</span>
         </div>
       </div>
@@ -203,7 +213,7 @@
 
           <div class="user-dropdown" id="userMenuDropdown" role="menu">
             <div class="dropdown-user-header">
-              <div class="dropdown-user-name">{% if user.role == 'TEACHER' and 'Dr.' not in user.get_full_name and 'Prof.' not in user.get_full_name %}Dr. {% endif %}{{ user.get_full_name|default:user.username|default:"Logged User" }}</div>
+              <div class="dropdown-user-name">{% if user.is_faculty and 'Dr.' not in user.get_full_name and 'Prof.' not in user.get_full_name %}Dr. {% endif %}{{ user.get_full_name|default:user.username|default:"Logged User" }}</div>
               <div class="dropdown-user-email">{{ user.email|default:"user@iiitbhopal.ac.in" }}</div>
             </div>
             <a href="{% url 'accounts:login' %}" class="dropdown-link" role="menuitem">

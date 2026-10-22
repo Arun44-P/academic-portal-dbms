@@ -193,3 +193,98 @@ class FeePayment(models.Model):
 
     def __str__(self):
         return f'Payment ₹{self.amount} ({self.transaction_reference}) - {self.fee_account.student.roll_number}'
+
+
+
+# ============================================================================
+# 8. ATTENDANCE & ACADEMIC EVALUATION (MARKS) MODELS
+# ============================================================================
+
+class AttendanceRecord(models.Model):
+    STATUS_CHOICES = (
+        ('PRESENT', 'Present'),
+        ('ABSENT', 'Absent'),
+        ('LATE', 'Late'),
+        ('EXCUSED', 'Excused'),
+    )
+    offering = models.ForeignKey(CourseOffering, on_delete=models.CASCADE, related_name='attendance_records')
+    student = models.ForeignKey('accounts.StudentProfile', on_delete=models.CASCADE, related_name='attendance_records')
+    session_date = models.DateField(default=timezone.localdate)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='PRESENT')
+    topic_covered = models.CharField(max_length=200, blank=True, null=True)
+    marked_by = models.ForeignKey('accounts.InstructorProfile', on_delete=models.RESTRICT, related_name='marked_attendance')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('offering', 'student', 'session_date')
+        ordering = ['-session_date', 'student__roll_number']
+
+    def __str__(self):
+        return f"{self.student.roll_number} - {self.offering.course.course_code} on {self.session_date}: {self.status}"
+
+
+class Assessment(models.Model):
+    TYPE_CHOICES = (
+        ('MID_TERM', 'Mid-Term Examination'),
+        ('END_TERM', 'End-Term Examination'),
+        ('QUIZ', 'Continuous Quiz / Class Test'),
+        ('ASSIGNMENT', 'Home / Lab Assignment'),
+        ('LAB_VIVA', 'Practical & Viva Voce'),
+    )
+    offering = models.ForeignKey(CourseOffering, on_delete=models.CASCADE, related_name='assessments')
+    name = models.CharField(max_length=120)
+    assessment_type = models.CharField(max_length=25, choices=TYPE_CHOICES, default='MID_TERM')
+    max_marks = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('100.00'))
+    weightage_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    is_published = models.BooleanField(default=False)
+    created_by = models.ForeignKey('accounts.InstructorProfile', on_delete=models.RESTRICT, related_name='created_assessments')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('offering', 'name')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        status_str = "Published" if self.is_published else "Draft"
+        return f"{self.offering.course.course_code} - {self.name} ({status_str})"
+
+
+class StudentMark(models.Model):
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='student_marks')
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='marks')
+    marks_obtained = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    is_absent = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    entered_by = models.ForeignKey('accounts.InstructorProfile', on_delete=models.RESTRICT, related_name='entered_marks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('assessment', 'enrollment')
+        ordering = ['assessment', 'enrollment__student__roll_number']
+
+    @property
+    def percentage(self):
+        if self.assessment.max_marks > 0 and not self.is_absent:
+            return round((self.marks_obtained / self.assessment.max_marks) * 100, 1)
+        return Decimal('0.0')
+
+    def __str__(self):
+        return f"{self.enrollment.student.roll_number} - {self.assessment.name}: {self.marks_obtained}/{self.assessment.max_marks}"
+
+
+class MarksAuditLog(models.Model):
+    mark = models.ForeignKey(StudentMark, on_delete=models.CASCADE, related_name='audit_history')
+    modified_by = models.ForeignKey('accounts.UserAccount', on_delete=models.RESTRICT, related_name='modified_marks')
+    previous_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    new_score = models.DecimalField(max_digits=5, decimal_places=2)
+    change_reason = models.CharField(max_length=255)
+    ip_address = models.GenericIPAddressField(default='127.0.0.1')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Audit: {self.mark} changed from {self.previous_score} to {self.new_score} by {self.modified_by.username}"

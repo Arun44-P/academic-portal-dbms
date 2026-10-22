@@ -9,31 +9,37 @@ from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 
-from apps.accounts.models import StudentProfile, OfficeStaffProfile
+from apps.accounts.models import StudentProfile, OfficeStaffProfile, InstructorProfile
+from apps.accounts.permissions import student_required, office_staff_required, admin_required
 from apps.academics.models import (
     Enrollment, CourseOffering, Program, Course, Department, AcademicSemester,
-    StudentFeeAccount, FeePayment
+    StudentFeeAccount, FeePayment, AttendanceRecord, Assessment, StudentMark, MarksAuditLog
 )
-from apps.research.models import ResearchJunior, StipendDisbursement
 from apps.core_admin.models import AdminAuditLog
 
 
 # ============================================================================
-# STUDENT VIEWS
+# STUDENT VIEWS (Strictly Scoped by Authenticated Student)
 # ============================================================================
 
-@login_required
+@student_required
 def student_dashboard(request):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access restricted to Students.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     enrollments = Enrollment.objects.filter(student=student).select_related(
         'offering__course', 'offering__semester', 'offering__instructor__user'
     )
 
-    total_credits = sum(e.offering.course.credits for e in enrollments if e.status == 'ENROLLED')
+    enrolled_count = enrollments.filter(status='ENROLLED').count()
+    registered_credits = sum(e.offering.course.credits for e in enrollments if e.status == 'ENROLLED')
+
+    # Real DB Attendance calculation
+    all_attendance = AttendanceRecord.objects.filter(
+        student=student,
+        offering__in=enrollments.values_list('offering_id', flat=True)
+    )
+    total_att_count = all_attendance.count()
+    present_att_count = all_attendance.filter(status__in=['PRESENT', 'LATE']).count()
+    overall_attendance = round((present_att_count / total_att_count * 100), 1) if total_att_count > 0 else 100.0
 
     # Real DB fee account
     fee_account = StudentFeeAccount.objects.filter(student=student).order_by('-semester__academic_year').first()
@@ -47,23 +53,28 @@ def student_dashboard(request):
         paid_fee = Decimal('0.00')
         due_fee = Decimal('300000.00')
 
+    # Recent published marks for this student
+    recent_marks = StudentMark.objects.filter(
+        enrollment__student=student,
+        assessment__is_published=True
+    ).select_related('assessment__offering__course', 'entered_by__user').order_by('-updated_at')[:6]
+
     return render(request, 'student/dashboard.html', {
         'student': student,
         'enrollments': enrollments,
-        'total_credits': total_credits,
+        'enrolled_count': enrolled_count,
+        'registered_credits': registered_credits,
+        'overall_attendance': overall_attendance,
         'fee_account': fee_account,
         'total_fee': total_fee,
         'paid_fee': paid_fee,
         'due_fee': due_fee,
+        'recent_marks': recent_marks,
     })
 
 
-@login_required
+@student_required
 def student_fee_status(request):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access restricted to Students.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     fee_account = StudentFeeAccount.objects.filter(student=student).order_by('-semester__academic_year').first()
     payments = []
@@ -88,12 +99,8 @@ def student_fee_status(request):
     })
 
 
-@login_required
+@student_required
 def course_catalog(request):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access restricted to Students.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     current_offerings = CourseOffering.objects.filter(
         semester__is_current=True
@@ -112,12 +119,8 @@ def course_catalog(request):
     })
 
 
-@login_required
+@student_required
 def enroll_course(request, offering_id):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access denied.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     offering = get_object_or_404(CourseOffering, id=offering_id)
 
@@ -146,12 +149,8 @@ def enroll_course(request, offering_id):
     return redirect('student:dashboard')
 
 
-@login_required
+@student_required
 def drop_course(request, enrollment_id):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access denied.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     enrollment = get_object_or_404(Enrollment, id=enrollment_id, student=student)
 
@@ -162,24 +161,75 @@ def drop_course(request, enrollment_id):
     return redirect('student:dashboard')
 
 
-@login_required
+@student_required
 def student_attendance_grades(request):
-    if request.user.role != 'STUDENT':
-        messages.error(request, "Access restricted to Students.")
-        return redirect('accounts:role_dispatch')
-
     student = get_object_or_404(StudentProfile, user=request.user)
     enrollments = Enrollment.objects.filter(student=student, status='ENROLLED').select_related(
         'offering__course', 'offering__semester', 'offering__instructor__user'
     )
 
+    attendance_data = []
+    total_attended_all = 0
+    total_sessions_all = 0
+    published_marks_list = []
+
+    for enr in enrollments:
+        off = enr.offering
+        records = AttendanceRecord.objects.filter(offering=off, student=student).order_by('-session_date')
+        tot = records.count()
+        att = records.filter(status__in=['PRESENT', 'LATE']).count()
+
+        total_sessions_all += tot
+        total_attended_all += att
+
+        pct = round((att / tot * 100), 1) if tot > 0 else 100.0
+
+        if pct >= 75.0:
+            risk_class = 'badge-success'
+            progress_class = 'progress-bar-success'
+            risk_label = 'Safe (≥ 75%)'
+        elif pct >= 65.0:
+            risk_class = 'badge-warning'
+            progress_class = 'progress-bar-warning'
+            risk_label = 'Caution (65% - 74%)'
+        else:
+            risk_class = 'badge-danger'
+            progress_class = 'progress-bar-danger'
+            risk_label = 'Detention Risk (< 65%)'
+
+        # Query only published marks for this enrollment
+        course_marks = StudentMark.objects.filter(
+            enrollment=enr,
+            assessment__is_published=True
+        ).select_related('assessment')
+
+        for cm in course_marks:
+            published_marks_list.append(cm)
+
+        attendance_data.append({
+            'enrollment': enr,
+            'offering': off,
+            'total_sessions': tot,
+            'attended_sessions': att,
+            'percentage': pct,
+            'risk_class': risk_class,
+            'progress_class': progress_class,
+            'risk_label': risk_label,
+            'recent_records': records[:6],
+            'course_marks': course_marks,
+        })
+
+    cumulative_attendance = round((total_attended_all / total_sessions_all * 100), 1) if total_sessions_all > 0 else 100.0
+
     return render(request, 'student/attendance_grades.html', {
         'student': student,
-        'enrollments': enrollments,
+        'attendance_data': attendance_data,
+        'cumulative_attendance': cumulative_attendance,
+        'published_marks': published_marks_list,
     })
 
 
-@login_required
+@student_required
 def student_research_role(request):
     messages.info(request, "The Research module is not available in the Academic Management Portal.")
     return redirect('student:dashboard')
@@ -189,12 +239,8 @@ def student_research_role(request):
 # OFFICE STAFF VIEWS - STUDENT FEE MANAGEMENT
 # ============================================================================
 
-@login_required
+@office_staff_required
 def office_dashboard(request):
-    if request.user.role not in ['OFFICE_STAFF', 'ADMIN']:
-        messages.error(request, "Access restricted to Office Staff.")
-        return redirect('accounts:role_dispatch')
-
     staff = OfficeStaffProfile.objects.filter(user=request.user).first()
 
     # Query all StudentFeeAccount records with related models
@@ -287,12 +333,8 @@ def office_dashboard(request):
     })
 
 
-@login_required
+@office_staff_required
 def student_fee_detail_view(request, account_id):
-    if request.user.role not in ['OFFICE_STAFF', 'ADMIN']:
-        messages.error(request, "Access restricted to Office Staff.")
-        return redirect('accounts:role_dispatch')
-
     staff = OfficeStaffProfile.objects.filter(user=request.user).first()
     account = get_object_or_404(
         StudentFeeAccount.objects.select_related(
@@ -351,12 +393,8 @@ def student_fee_detail_view(request, account_id):
     })
 
 
-@login_required
+@office_staff_required
 def record_fee_payment(request, account_id):
-    if request.user.role not in ['OFFICE_STAFF', 'ADMIN']:
-        messages.error(request, "Access restricted to authorized Office Staff.")
-        return redirect('accounts:role_dispatch')
-
     staff = OfficeStaffProfile.objects.filter(user=request.user).first()
     account = get_object_or_404(StudentFeeAccount, id=account_id)
 
@@ -425,12 +463,8 @@ def record_fee_payment(request, account_id):
     return redirect('office:dashboard')
 
 
-@login_required
+@office_staff_required
 def office_payment_history(request):
-    if request.user.role not in ['OFFICE_STAFF', 'ADMIN']:
-        messages.error(request, "Access restricted to Office Staff.")
-        return redirect('accounts:role_dispatch')
-
     staff = OfficeStaffProfile.objects.filter(user=request.user).first()
     payments_qs = FeePayment.objects.select_related(
         'fee_account__student__user',
@@ -463,18 +497,116 @@ def office_payment_history(request):
     })
 
 
-@login_required
+@office_staff_required
 def schedule_view(request):
-    if request.user.role not in ['OFFICE_STAFF', 'ADMIN']:
-        messages.error(request, "Access restricted to Office Staff.")
-        return redirect('accounts:role_dispatch')
-
     staff = OfficeStaffProfile.objects.filter(user=request.user).first()
     offerings = CourseOffering.objects.all().select_related('course', 'instructor__user', 'semester')
 
     return render(request, 'office/schedule.html', {
         'staff': staff,
         'offerings': offerings,
+    })
+
+
+@office_staff_required
+def office_student_directory(request):
+    """
+    Read-only student directory for Office Staff.
+    Permits searching and filtering by department, semester, and academic status.
+    Protected against editing, deletion, or viewing sensitive auth hashes.
+    """
+    staff = OfficeStaffProfile.objects.filter(user=request.user).first()
+    students_qs = StudentProfile.objects.select_related(
+        'user', 'program__department'
+    ).prefetch_related('fee_accounts').order_by('roll_number')
+
+    search_q = request.GET.get('q', '').strip()
+    selected_dept = request.GET.get('department', '').strip()
+    selected_sem = request.GET.get('semester', '').strip()
+    selected_status = request.GET.get('status', '').strip()
+
+    if search_q:
+        students_qs = students_qs.filter(
+            Q(roll_number__icontains=search_q) |
+            Q(user__first_name__icontains=search_q) |
+            Q(user__last_name__icontains=search_q) |
+            Q(user__username__icontains=search_q) |
+            Q(user__email__icontains=search_q) |
+            Q(program__name__icontains=search_q)
+        )
+
+    if selected_dept:
+        students_qs = students_qs.filter(program__department__code=selected_dept)
+
+    if selected_sem:
+        students_qs = students_qs.filter(current_semester=selected_sem)
+
+    if selected_status:
+        students_qs = students_qs.filter(status=selected_status)
+
+    departments = Department.objects.all().order_by('name')
+    paginator = Paginator(students_qs, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'office/student_directory.html', {
+        'staff': staff,
+        'page_obj': page_obj,
+        'departments': departments,
+        'search_q': search_q,
+        'selected_dept': selected_dept,
+        'selected_sem': selected_sem,
+        'selected_status': selected_status,
+        'total_count': students_qs.count(),
+    })
+
+
+@office_staff_required
+def office_faculty_directory(request):
+    """
+    Read-only faculty directory for Office Staff.
+    Permits searching and filtering by department and faculty designation.
+    Excludes sensitive compensation and authentication fields.
+    """
+    staff = OfficeStaffProfile.objects.filter(user=request.user).first()
+    faculty_qs = InstructorProfile.objects.select_related(
+        'user', 'department'
+    ).prefetch_related('offerings__course').order_by('employee_code')
+
+    search_q = request.GET.get('q', '').strip()
+    selected_dept = request.GET.get('department', '').strip()
+    selected_category = request.GET.get('category', '').strip()
+
+    if search_q:
+        faculty_qs = faculty_qs.filter(
+            Q(employee_code__icontains=search_q) |
+            Q(user__first_name__icontains=search_q) |
+            Q(user__last_name__icontains=search_q) |
+            Q(user__email__icontains=search_q) |
+            Q(department__name__icontains=search_q) |
+            Q(department__code__icontains=search_q) |
+            Q(designation__icontains=search_q)
+        )
+
+    if selected_dept:
+        faculty_qs = faculty_qs.filter(department__code=selected_dept)
+
+    if selected_category:
+        faculty_qs = faculty_qs.filter(faculty_category=selected_category)
+
+    departments = Department.objects.all().order_by('name')
+    paginator = Paginator(faculty_qs, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'office/faculty_directory.html', {
+        'staff': staff,
+        'page_obj': page_obj,
+        'departments': departments,
+        'search_q': search_q,
+        'selected_dept': selected_dept,
+        'selected_category': selected_category,
+        'total_count': faculty_qs.count(),
     })
 
 

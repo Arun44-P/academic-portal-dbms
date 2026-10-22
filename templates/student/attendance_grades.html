@@ -2,22 +2,24 @@
 {% load static %}
 
 {% block title %}Attendance &amp; Academic Grades{% endblock %}
-{% block breadcrumb %}Attendance &amp; Assessment{% endblock %}
+{% block breadcrumb %}Student Portal / Attendance &amp; Assessments{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Academic Attendance &amp; Performance</h1>
-    <p class="text-sm text-muted">Official semester records for IIIT Bhopal curriculum, continuous evaluations, and attendance detention risk compliance.</p>
+    <p class="text-sm text-muted">Official attendance logs, continuous assessments, and detention compliance records for {{ student.user.get_full_name|default:student.user.username }} ({{ student.roll_number }}).</p>
   </div>
   <div class="page-header-actions">
-    <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
-      Cumulative Average: <strong>80.2%</strong>
+    <span class="badge {% if cumulative_attendance >= 75.0 %}badge-success{% elif cumulative_attendance >= 65.0 %}badge-warning{% else %}badge-danger{% endif %}" style="font-size: 0.9rem; padding: 0.45rem 0.85rem;">
+      Cumulative Attendance: <strong>{{ cumulative_attendance }}%</strong>
     </span>
   </div>
 </div>
 
-<!-- Section 1: Course-wise Attendance Progress -->
+<!-- ======================================================================
+     SECTION 1: COURSE-WISE ATTENDANCE PROGRESS & DETENTION RISK MONITORING
+     ====================================================================== -->
 <div class="card" style="margin-bottom: 2rem;">
   <div class="card-header">
     <h2 class="card-title">
@@ -31,185 +33,115 @@
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Course &amp; Faculty Designation</th>
+            <th>Course &amp; Faculty Instructor</th>
             <th>Attended / Total</th>
-            <th>Percentage</th>
+            <th>Attendance %</th>
             <th style="min-width: 220px;">Progress Bar</th>
             <th>Status / Risk Level</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Case 1: Safe >= 75% (Green) -->
+          {% for item in attendance_data %}
+          <tr {% if item.percentage < 65.0 %}style="background-color: #fffbfb;"{% endif %}>
+            <td>
+              <div class="font-bold">{{ item.offering.course.course_code }}: {{ item.offering.course.title }}</div>
+              <div class="text-xs text-muted">
+                <strong>Instructor:</strong> Prof. {{ item.offering.instructor.user.get_full_name|default:item.offering.instructor.user.username }}
+                ({{ item.offering.instructor.get_faculty_category_display }}) &bull; Sec {{ item.offering.section_name }}
+              </div>
+            </td>
+            <td><strong>{{ item.attended_sessions }}</strong> / {{ item.total_sessions }} Lectures</td>
+            <td>
+              <strong class="{% if item.percentage >= 75.0 %}text-success{% elif item.percentage >= 65.0 %}text-warning{% else %}text-danger{% endif %}" style="font-size: 1.05rem;">
+                {{ item.percentage }}%
+              </strong>
+            </td>
+            <td>
+              <div class="progress progress-lg">
+                <div class="progress-bar {{ item.progress_class }}" style="width: {{ item.percentage }}%;">{{ item.percentage }}%</div>
+              </div>
+            </td>
+            <td>
+              <span class="badge {{ item.risk_class }}">
+                <span class="badge-dot"></span>
+                {{ item.risk_label }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
           <tr>
-            <td>
-              <div class="font-bold">CS301: Database Management Systems</div>
-              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Yatendra Sahu (HOD &amp; Tenured Professor)</div>
-            </td>
-            <td><strong>32</strong> / 36 Lectures</td>
-            <td><strong class="text-success" style="font-size: 1.1rem;">88.9%</strong></td>
-            <td>
-              <div class="progress progress-lg">
-                <div class="progress-bar progress-bar-success" style="width: 88.9%;">88.9%</div>
-              </div>
-            </td>
-            <td>
-              <span class="badge badge-success">
-                <span class="badge-dot"></span>
-                Safe (&ge; 75%)
-              </span>
-            </td>
+            <td colspan="5" class="text-center p-4 text-muted">No course enrollments found for the current semester.</td>
           </tr>
-
-          <!-- Case 2: Caution 65% - 74% (Amber) -->
-          <tr>
-            <td>
-              <div class="font-bold">CS302: Operating Systems</div>
-              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Rahul Chaurasia (Professor)</div>
-            </td>
-            <td><strong>23</strong> / 32 Lectures</td>
-            <td><strong class="text-warning" style="font-size: 1.1rem;">71.9%</strong></td>
-            <td>
-              <div class="progress progress-lg">
-                <div class="progress-bar progress-bar-warning" style="width: 71.9%;">71.9%</div>
-              </div>
-            </td>
-            <td>
-              <span class="badge badge-warning">
-                <span class="badge-dot"></span>
-                Caution (65% - 74%)
-              </span>
-            </td>
-          </tr>
-
-          <!-- Case 3: Detention Risk < 65% (Red) -->
-          <tr style="background-color: #fffbfb;">
-            <td>
-              <div class="font-bold text-danger">CS303: Computer Networks</div>
-              <div class="text-xs text-danger font-semibold">
-                <strong>Assistant Professor:</strong> Dr. Neha Kakkar (Detention Risk Warning Issued)
-              </div>
-            </td>
-            <td><strong>18</strong> / 30 Lectures</td>
-            <td><strong class="text-danger" style="font-size: 1.1rem;">60.0%</strong></td>
-            <td>
-              <div class="progress progress-lg">
-                <div class="progress-bar progress-bar-danger" style="width: 60%;">60.0%</div>
-              </div>
-            </td>
-            <td>
-              <span class="badge badge-danger">
-                <span class="badge-dot"></span>
-                Detention Risk (&lt; 65%)
-              </span>
-            </td>
-          </tr>
-
-          <!-- Case 4: Safe >= 75% (Green) -->
-          <tr>
-            <td>
-              <div class="font-bold">CS304: Design and Analysis of Algorithms</div>
-              <div class="text-xs text-muted"><strong>Professor:</strong> Dr. Yatendra Sahu (Professor)</div>
-            </td>
-            <td><strong>12</strong> / 12 Sessions</td>
-            <td><strong class="text-success" style="font-size: 1.1rem;">100.0%</strong></td>
-            <td>
-              <div class="progress progress-lg">
-                <div class="progress-bar progress-bar-success" style="width: 100%;">100%</div>
-              </div>
-            </td>
-            <td>
-              <span class="badge badge-success">
-                <span class="badge-dot"></span>
-                Exemplary Attendance
-              </span>
-            </td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- Section 2: Detailed Assessment & Grade Matrix -->
+<!-- ======================================================================
+     SECTION 2: COMPONENT-WISE ASSESSMENT BREAKDOWN (PUBLISHED RESULTS)
+     ====================================================================== -->
 <div class="card">
   <div class="card-header">
     <h2 class="card-title">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Component-Wise Assessment Breakdown (IIIT Bhopal Standard)
+      Official Published Assessment Marks
     </h2>
-    <span class="text-xs text-muted">Official Grade Card</span>
+    <span class="badge badge-success">Released Results Only</span>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
-            <th>Course &amp; Professor</th>
-            <th>Quiz 1 (10)</th>
-            <th>Quiz 2 (10)</th>
-            <th>Mid-Term (30)</th>
-            <th>End-Term (50)</th>
-            <th>Total Score (100)</th>
-            <th>Letter Grade</th>
+            <th>Course</th>
+            <th>Assessment Component</th>
+            <th>Evaluation Type</th>
+            <th>Weightage</th>
+            <th>Marks Obtained</th>
+            <th>Status</th>
+            <th>Remarks</th>
           </tr>
         </thead>
         <tbody>
+          {% for mark in published_marks %}
           <tr>
             <td>
-              <strong class="table-code">CS301</strong>: DBMS
-              <div class="text-xs text-muted">Professor: Dr. Yatendra Sahu</div>
+              <strong class="table-code">{{ mark.assessment.offering.course.course_code }}</strong>
+              <div class="text-xs text-muted">{{ mark.assessment.offering.course.title }}</div>
             </td>
-            <td>9.5</td>
-            <td>8.5</td>
-            <td>27.5</td>
-            <td>44.0</td>
-            <td><strong class="text-primary">89.5</strong></td>
-            <td><span class="badge badge-success">A (Excellent)</span></td>
-          </tr>
-          <tr>
             <td>
-              <strong class="table-code">CS302</strong>: Operating Systems
-              <div class="text-xs text-muted">Professor: Dr. Rahul Chaurasia</div>
+              <strong>{{ mark.assessment.name }}</strong>
             </td>
-            <td>8.0</td>
-            <td>7.0</td>
-            <td>23.0</td>
-            <td>38.5</td>
-            <td><strong class="text-primary">76.5</strong></td>
-            <td><span class="badge badge-info">B+ (Good)</span></td>
-          </tr>
-          <tr>
+            <td><span class="badge badge-info">{{ mark.assessment.get_assessment_type_display }}</span></td>
+            <td>{{ mark.assessment.weightage_percent }}%</td>
             <td>
-              <strong class="table-code">CS303</strong>: Computer Networks
-              <div class="text-xs text-muted">Assistant Professor: Dr. Neha Kakkar</div>
+              {% if mark.is_absent %}
+                <span class="badge badge-danger">ABSENT</span>
+              {% else %}
+                <strong class="text-primary" style="font-size: 1.05rem;">{{ mark.marks_obtained }}</strong>
+                <span class="text-muted text-xs">/ {{ mark.assessment.max_marks }} ({{ mark.percentage }}%)</span>
+              {% endif %}
             </td>
-            <td>6.5</td>
-            <td>7.0</td>
-            <td>19.5</td>
-            <td><em>Pending</em></td>
-            <td><strong class="text-muted">33.0 / 50</strong></td>
-            <td><span class="badge badge-warning">In Progress</span></td>
+            <td><span class="badge badge-success">Verified &amp; Released</span></td>
+            <td class="text-sm text-muted">{{ mark.remarks|default:"Evaluated" }}</td>
           </tr>
+          {% empty %}
           <tr>
-            <td>
-              <strong class="table-code">CS304</strong>: Algorithms (DAA)
-              <div class="text-xs text-muted">Professor: Dr. Yatendra Sahu</div>
+            <td colspan="7" class="text-center p-4 text-muted">
+              No published assessment scores released yet. (Draft marks remain strictly confidential until officially published by your course instructors).
             </td>
-            <td>10.0</td>
-            <td>9.5</td>
-            <td>28.5</td>
-            <td>47.0</td>
-            <td><strong class="text-primary">95.0</strong></td>
-            <td><span class="badge badge-success">A+ (Outstanding)</span></td>
           </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
   <div class="card-footer">
     <div class="flex items-center justify-between w-full">
-      <span class="font-bold text-main">Calculated SGPA: <strong>8.85 / 10.0</strong></span>
-      <span class="text-xs text-muted">Grading Scale: 10-point Relative Grading System (IIIT Bhopal)</span>
+      <span class="text-xs text-muted">Draft assessments are kept confidential until validated and published by the assigned faculty.</span>
+      <span class="font-bold text-main">Institutional Assessment Policy: 10-point Scale Compliant</span>
     </div>
   </div>
 </div>

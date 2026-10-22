@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 class UserAccount(AbstractUser):
     ROLE_CHOICES = (
         ('ADMIN', 'Administrator'),
-        ('TEACHER', 'Teacher / Faculty'),
+        ('FACULTY', 'Faculty'),
         ('OFFICE_STAFF', 'Office Staff'),
         ('STUDENT', 'Student'),
     )
@@ -13,6 +13,42 @@ class UserAccount(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_student(self):
+        return self.role == 'STUDENT'
+
+    @property
+    def is_faculty(self):
+        return self.role in ('FACULTY', 'TEACHER')
+
+    @property
+    def is_office_staff(self):
+        return self.role in ('OFFICE_STAFF', 'OFFICE')
+
+    @property
+    def is_administrator(self):
+        return self.role == 'ADMIN'
+
+    def sync_group_membership(self):
+        """Synchronizes user into the matching Django Group for their primary business role."""
+        from django.contrib.auth.models import Group
+        role_group_name = 'FACULTY' if self.role in ('FACULTY', 'TEACHER') else self.role
+        try:
+            group, _ = Group.objects.get_or_create(name=role_group_name)
+            self.groups.add(group)
+            other_groups = Group.objects.filter(name__in=['ADMIN', 'FACULTY', 'OFFICE_STAFF', 'STUDENT']).exclude(name=role_group_name)
+            self.groups.remove(*other_groups)
+        except Exception:
+            pass
+
+    def save(self, *args, **kwargs):
+        # Normalize legacy 'TEACHER' role to 'FACULTY'
+        if self.role == 'TEACHER':
+            self.role = 'FACULTY'
+        super().save(*args, **kwargs)
+        if self.pk:
+            self.sync_group_membership()
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

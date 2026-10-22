@@ -34,14 +34,14 @@ def logout_view(request):
 
 @login_required
 def role_dispatch_view(request):
-    role = request.user.role
+    role = getattr(request.user, 'role', '')
     if role == 'ADMIN':
         return redirect('core_admin:dashboard')
-    elif role == 'TEACHER':
+    elif role in ('FACULTY', 'TEACHER') or request.user.is_faculty:
         return redirect('faculty:dashboard')
-    elif role == 'OFFICE_STAFF':
+    elif role in ('OFFICE_STAFF', 'OFFICE') or request.user.is_office_staff:
         return redirect('office:dashboard')
-    elif role == 'STUDENT':
+    elif role == 'STUDENT' or request.user.is_student:
         return redirect('student:dashboard')
     else:
         messages.error(request, "Unrecognized user role.")

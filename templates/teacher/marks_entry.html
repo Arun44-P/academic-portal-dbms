@@ -8,7 +8,7 @@
 <div class="page-header">
   <div>
     <h1 class="page-header-title">Curricular Assessment &amp; Marks Entry</h1>
-    <p class="text-sm text-muted">Input marks for quizzes, midterm, and endterm exams with automated client-side maximum bound validation.</p>
+    <p class="text-sm text-muted">Input marks for quizzes, midterm, and endterm exams with server-validated score limits and draft/published controls.</p>
   </div>
   <div class="page-header-actions">
     <a href="{% url 'teacher:sections' %}" class="btn btn-outline btn-sm">Back to Sections</a>
@@ -18,34 +18,44 @@
 <form method="POST" action="{% url 'teacher:marks_entry' %}" id="marksEntryForm">
   {% csrf_token %}
 
-  <!-- Section Selector & Assessment Policy Banner -->
+  <!-- Section Selector & Assessment Status Banner -->
   <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header bg-muted">
       <h2 class="card-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Course Section &amp; Component Maximum Weights
       </h2>
+      <div>
+        {% if all_published %}
+          <span class="badge badge-success"><span class="badge-dot"></span> Results Published to Students</span>
+        {% else %}
+          <span class="badge badge-warning"><span class="badge-dot"></span> Draft Mode (Confidential to Faculty)</span>
+        {% endif %}
+      </div>
     </div>
     <div class="card-body">
       <div class="grid-2-col" style="margin-bottom: 0;">
         <div class="form-group" style="margin-bottom: 0;">
           <label for="sectionSelect" class="form-label required">Course Section</label>
-          <select name="offering_id" id="sectionSelect" class="form-select">
-            <option value="101" selected>CS301: Database Management Systems (Section A)</option>
-            <option value="102">CS311: Relational DBMS Lab (Batch 1)</option>
-            <option value="103">CS420: Distributed Systems (Section A)</option>
+          <select name="offering_id" id="sectionSelect" class="form-select" onchange="window.location.href='?offering_id=' + this.value;" required>
+            {% for o in offerings %}
+              <option value="{{ o.id }}" {% if selected_offering.id == o.id %}selected{% endif %}>
+                {{ o.course.course_code }}: {{ o.course.title }} (Sec {{ o.section_name }})
+              </option>
+            {% empty %}
+              <option value="">No Course Sections Assigned</option>
+            {% endfor %}
           </select>
         </div>
         <div style="background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); padding: 0.75rem 1rem; border: 1px solid var(--border-light);">
-          <div class="text-xs text-muted uppercase font-bold" style="margin-bottom: 0.25rem;">Weight Distribution (100 Total)</div>
-          <div class="flex items-center gap-3 text-sm">
-            <span>Quiz 1: <strong>10 pts</strong></span>
-            <span>•</span>
-            <span>Quiz 2: <strong>10 pts</strong></span>
-            <span>•</span>
-            <span>Mid-Term: <strong>30 pts</strong></span>
-            <span>•</span>
-            <span>End-Term: <strong>50 pts</strong></span>
+          <div class="text-xs text-muted uppercase font-bold" style="margin-bottom: 0.25rem;">Active Assessment Components</div>
+          <div class="flex items-center gap-3 text-sm flex-wrap">
+            {% for ass in assessments %}
+              <span>{{ ass.name }}: <strong>{{ ass.max_marks }} pts</strong> {% if ass.is_published %}<span class="badge badge-xs badge-success">Pub</span>{% else %}<span class="badge badge-xs badge-warning">Draft</span>{% endif %}</span>
+              {% if not forloop.last %}<span>•</span>{% endif %}
+            {% empty %}
+              <span class="text-muted">No assessments defined</span>
+            {% endfor %}
           </div>
         </div>
       </div>
@@ -67,131 +77,72 @@
             <tr>
               <th style="width: 140px;">Roll Number</th>
               <th>Student Name</th>
-              <th style="width: 130px;">Quiz 1 (Max 10)</th>
-              <th style="width: 130px;">Quiz 2 (Max 10)</th>
-              <th style="width: 140px;">Mid-Term (Max 30)</th>
-              <th style="width: 140px;">End-Term (Max 50)</th>
-              <th style="width: 110px;">Total (100)</th>
-              <th style="width: 130px;">Projected Grade</th>
+              {% for ass in assessments %}
+                <th style="width: 140px; text-align: center;">
+                  {{ ass.name }}
+                  <div class="text-xs text-muted font-normal">(Max {{ ass.max_marks }})</div>
+                </th>
+              {% endfor %}
+              <th style="width: 110px; text-align: center;">Total</th>
+              <th style="width: 130px; text-align: center;">Grade</th>
             </tr>
           </thead>
           <tbody>
+            {% for row in matrix_rows %}
             <tr class="marks-row">
-              <td><span class="table-code font-bold">2026CS101</span></td>
+              <td><span class="table-code font-bold">{{ row.student.roll_number }}</span></td>
               <td>
-                <div class="font-bold">Aarav Sharma</div>
-                <div class="text-xs text-muted">B.Tech CSE</div>
+                <div class="font-bold">{{ row.student.user.get_full_name }}</div>
+                <div class="text-xs text-muted">{{ row.student.program.name }}</div>
               </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS101" value="9.5" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS101" value="8.5" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS101" value="27.5" class="form-control mark-input" data-max="30" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS101" value="44.0" class="form-control mark-input" data-max="50" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
-              </td>
-              <td><strong class="total-score text-primary">89.5</strong></td>
-              <td><span class="badge badge-success grade-badge">A</span></td>
-            </tr>
 
-            <tr class="marks-row">
-              <td><span class="table-code font-bold">2026CS102</span></td>
+              {% for s in row.scores %}
               <td>
-                <div class="font-bold">Ananya Desai</div>
-                <div class="text-xs text-muted">B.Tech CSE</div>
+                <input type="number"
+                       step="0.5"
+                       min="0"
+                       max="{{ s.max_marks }}"
+                       name="mark_{{ row.student.roll_number }}_{{ s.assessment_id }}"
+                       value="{{ s.score }}"
+                       class="form-control mark-input"
+                       data-max="{{ s.max_marks }}"
+                       style="text-align: center;">
+                <div class="text-xs text-danger error-hint" style="display: none; text-align: center;">Max {{ s.max_marks }}!</div>
               </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS102" value="10.0" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS102" value="9.5" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS102" value="29.0" class="form-control mark-input" data-max="30" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS102" value="48.0" class="form-control mark-input" data-max="50" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
-              </td>
-              <td><strong class="total-score text-primary">96.5</strong></td>
-              <td><span class="badge badge-success grade-badge">A+</span></td>
-            </tr>
+              {% endfor %}
 
-            <tr class="marks-row">
-              <td><span class="table-code font-bold">2026CS103</span></td>
-              <td>
-                <div class="font-bold">Devrat Singh</div>
-                <div class="text-xs text-muted">B.Tech CSE</div>
+              <td style="text-align: center;">
+                <strong class="total-score text-primary">{{ row.total_obtained }}</strong>
+                <span class="text-xs text-muted">/ {{ row.total_max }}</span>
               </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS103" value="7.0" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
+              <td style="text-align: center;">
+                <span class="badge {{ row.grade_badge }} grade-badge">{{ row.grade }}</span>
               </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS103" value="6.5" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS103" value="20.0" class="form-control mark-input" data-max="30" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS103" value="32.0" class="form-control mark-input" data-max="50" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
-              </td>
-              <td><strong class="total-score text-primary">65.5</strong></td>
-              <td><span class="badge badge-warning grade-badge">B</span></td>
             </tr>
-
-            <tr class="marks-row">
-              <td><span class="table-code font-bold">2026CS104</span></td>
-              <td>
-                <div class="font-bold">Ishaan Kapoor</div>
-                <div class="text-xs text-muted">B.Tech CSE</div>
+            {% empty %}
+            <tr>
+              <td colspan="{{ assessments|length|add:4 }}" class="text-center p-4 text-muted">
+                No students enrolled in this section.
               </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz1_2026CS104" value="5.0" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="10" name="quiz2_2026CS104" value="5.5" class="form-control mark-input" data-max="10" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 10!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="30" name="midterm_2026CS104" value="14.0" class="form-control mark-input" data-max="30" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 30!</div>
-              </td>
-              <td>
-                <input type="number" step="0.5" min="0" max="50" name="endterm_2026CS104" value="22.5" class="form-control mark-input" data-max="50" required>
-                <div class="text-xs text-danger error-hint" style="display: none;">Max 50!</div>
-              </td>
-              <td><strong class="total-score text-danger">47.0</strong></td>
-              <td><span class="badge badge-danger grade-badge">C</span></td>
             </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
     <div class="card-footer">
-      <div class="flex items-center justify-between w-full">
-        <span class="text-xs text-muted">Finalized grades calculate GPA rankings and update transcripts.</span>
+      <div class="flex items-center justify-between w-full flex-wrap gap-3">
+        <span class="text-xs text-muted">
+          * Saving as Draft keeps grades confidential. Finalizing publishes scores to student portal.
+        </span>
         <div class="flex items-center gap-2">
-          <button type="submit" name="save_draft" value="true" class="btn btn-outline">
-            Save Draft
+          <button type="submit" name="save_draft" value="true" class="btn btn-outline" {% if not matrix_rows %}disabled{% endif %}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Draft (Private)
           </button>
-          <button type="submit" name="finalize" value="true" id="submitGradesBtn" class="btn btn-primary">
-            Finalize &amp; Submit Grades
+          <button type="submit" name="finalize" value="true" id="submitGradesBtn" class="btn btn-primary" {% if not matrix_rows %}disabled{% endif %}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Finalize &amp; Publish to Students
           </button>
         </div>
       </div>
@@ -204,6 +155,8 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const table = document.getElementById('marksMatrixTable');
+    if (!table) return;
+
     const submitBtn = document.getElementById('submitGradesBtn');
     const statusBadge = document.getElementById('validationStatusBadge');
 
@@ -217,7 +170,7 @@
         const max = parseFloat(input.getAttribute('data-max')) || 100;
         const errHint = input.parentElement.querySelector('.error-hint');
 
-        if (val > max || val < 0) {
+        if (input.value !== '' && (val > max || val < 0)) {
           input.classList.add('is-invalid');
           input.style.borderColor = 'var(--color-danger)';
           if (errHint) errHint.style.display = 'block';
@@ -226,7 +179,9 @@
           input.classList.remove('is-invalid');
           input.style.borderColor = '';
           if (errHint) errHint.style.display = 'none';
-          total += val;
+          if (input.value !== '') {
+            total += val;
+          }
         }
       });
 
@@ -260,11 +215,11 @@
       });
 
       if (allValid) {
-        submitBtn.removeAttribute('disabled');
-        statusBadge.innerHTML = '<span class="badge badge-success">All inputs valid</span>';
+        if (submitBtn) submitBtn.removeAttribute('disabled');
+        if (statusBadge) statusBadge.innerHTML = '<span class="badge badge-success">All inputs valid</span>';
       } else {
-        submitBtn.setAttribute('disabled', 'true');
-        statusBadge.innerHTML = '<span class="badge badge-danger">Errors detected (exceeds max marks)</span>';
+        if (submitBtn) submitBtn.setAttribute('disabled', 'true');
+        if (statusBadge) statusBadge.innerHTML = '<span class="badge badge-danger">Errors detected (exceeds max marks)</span>';
       }
     }
 
@@ -276,4 +231,3 @@
   });
 </script>
 {% endblock %}
-

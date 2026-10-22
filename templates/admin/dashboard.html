@@ -159,7 +159,7 @@
         </a>
 
         <!-- Faculty Module -->
-        <a href="{% url 'core_admin:users' %}?role=TEACHER" class="launchpad-card">
+        <a href="{% url 'core_admin:users' %}?role=FACULTY" class="launchpad-card">
           <div>
             <div class="launchpad-card-header">
               <div class="launchpad-icon stat-icon-purple">
@@ -262,10 +262,10 @@
 
         <div>
           <div class="flex items-center justify-between text-sm" style="margin-bottom: 0.25rem;">
-            <span><strong>Faculty &amp; Instructors</strong> (<code>TEACHER</code>)</span>
-            <span class="font-bold text-main">{{ metrics.role_counts.TEACHER }} ({{ metrics.role_pct.TEACHER }}%)</span>
+            <span><strong>Faculty &amp; Instructors</strong> (<code>FACULTY</code>)</span>
+            <span class="font-bold text-main">{{ metrics.role_counts.FACULTY|default:metrics.role_counts.TEACHER }} ({{ metrics.role_pct.FACULTY|default:metrics.role_pct.TEACHER }}%)</span>
           </div>
-          <div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: {{ metrics.role_pct.TEACHER }}%;"></div></div>
+          <div class="progress progress-lg"><div class="progress-bar progress-bar-success" style="width: {{ metrics.role_pct.FACULTY|default:metrics.role_pct.TEACHER }}%;"></div></div>
         </div>
 
         <div>
@@ -333,7 +333,7 @@
       </div>
     </div>
     <div class="card-footer">
-      <a href="{% url 'core_admin:users' %}?role=TEACHER" class="text-sm font-semibold">
+      <a href="{% url 'core_admin:users' %}?role=FACULTY" class="text-sm font-semibold">
         Inspect Faculty Subtypes &amp; Mentorship Allocations &rarr;
       </a>
     </div>

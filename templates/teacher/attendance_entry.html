@@ -29,22 +29,26 @@
     <div class="card-body">
       <div class="grid-3-col" style="margin-bottom: 0;">
         <div class="form-group" style="margin-bottom: 0;">
-          <label for="sectionSelect" class="form-label required">Course Section</label>
-          <select name="offering_id" id="sectionSelect" class="form-select" required>
-            <option value="101" selected>CS301: DBMS (Section A) • LH-302</option>
-            <option value="102">CS311: DBMS Lab (Batch 1) • LAB-4</option>
-            <option value="103">CS420: Distributed Systems (Section A) • CS-201</option>
+          <label for="sectionSelect" class="form-label required">Assigned Course Section</label>
+          <select name="offering_id" id="sectionSelect" class="form-select" onchange="window.location.href='?offering_id=' + this.value + '&session_date=' + document.getElementById('sessionDate').value;" required>
+            {% for o in offerings %}
+              <option value="{{ o.id }}" {% if selected_offering.id == o.id %}selected{% endif %}>
+                {{ o.course.course_code }}: {{ o.course.title }} (Sec {{ o.section_name }})
+              </option>
+            {% empty %}
+              <option value="">No Course Sections Assigned</option>
+            {% endfor %}
           </select>
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
           <label for="sessionDate" class="form-label required">Session Date</label>
-          <input type="date" name="session_date" id="sessionDate" class="form-control" value="2026-10-15" required>
+          <input type="date" name="session_date" id="sessionDate" class="form-control" value="{{ session_date }}" onchange="window.location.href='?offering_id={{ selected_offering.id }}&session_date=' + this.value;" required>
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
           <label for="topicCovered" class="form-label required">Topic Covered / Syllabus Milestone</label>
-          <input type="text" name="topic_covered" id="topicCovered" class="form-control" placeholder="e.g. BCNF Decomposition &amp; Lossless Joins" value="BCNF Decomposition &amp; Functional Dependency Preservation" required>
+          <input type="text" name="topic_covered" id="topicCovered" class="form-control" placeholder="e.g. Relational Calculus &amp; Query Optimization" value="Lecture / Lab Session" required>
         </div>
       </div>
     </div>
@@ -58,19 +62,19 @@
         <div class="flex items-center gap-4">
           <div>
             <span class="text-xs text-muted uppercase font-bold">Total Roster:</span>
-            <span class="font-bold text-main" id="totalStudentsCount">6</span>
+            <span class="font-bold text-main" id="totalStudentsCount">{{ total_count }}</span>
           </div>
           <div>
             <span class="text-xs text-muted uppercase font-bold">Present:</span>
-            <span class="font-bold text-success" id="presentStudentsCount">5</span>
+            <span class="font-bold text-success" id="presentStudentsCount">{{ present_cnt }}</span>
           </div>
           <div>
             <span class="text-xs text-muted uppercase font-bold">Absent:</span>
-            <span class="font-bold text-danger" id="absentStudentsCount">1</span>
+            <span class="font-bold text-danger" id="absentStudentsCount">{{ absent_cnt }}</span>
           </div>
           <div>
             <span class="text-xs text-muted uppercase font-bold">Session Rate:</span>
-            <span class="badge badge-success" id="attendancePercentageVal" style="font-size: 0.85rem;">83%</span>
+            <span class="badge badge-success" id="attendancePercentageVal" style="font-size: 0.85rem;">{{ session_rate }}%</span>
           </div>
         </div>
 
@@ -96,7 +100,7 @@
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="rosterSearchInput" class="form-control" placeholder="Search student name or roll number..." style="max-width: 320px;">
       </div>
-      <span class="text-xs text-muted">Changes take effect immediately upon submission</span>
+      <span class="text-xs text-muted">ACID database transaction guarantees consistency</span>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -106,150 +110,60 @@
               <th style="width: 140px;">Roll Number</th>
               <th>Student Name</th>
               <th>Term Attendance %</th>
-              <th style="width: 220px; text-align: center;">Attendance Status</th>
+              <th style="width: 260px; text-align: center;">Attendance Status</th>
               <th>Remarks</th>
             </tr>
           </thead>
           <tbody>
-            <tr class="student-row" data-roll-no="2026CS101" data-student-name="Aarav Sharma">
-              <td><span class="table-code font-bold">2026CS101</span></td>
+            {% for item in roster_data %}
+            <tr class="student-row" data-roll-no="{{ item.student.roll_number }}" data-student-name="{{ item.student.user.get_full_name }}">
+              <td><span class="table-code font-bold">{{ item.student.roll_number }}</span></td>
               <td>
-                <div class="font-bold">Aarav Sharma</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
+                <div class="font-bold">{{ item.student.user.get_full_name }}</div>
+                <div class="text-xs text-muted">{{ item.student.program.name }} • Sem {{ item.student.current_semester }}</div>
               </td>
-              <td><span class="badge badge-success">88.9% (Safe)</span></td>
+              <td>
+                <span class="badge {% if item.overall_pct >= 75 %}badge-success{% elif item.overall_pct >= 60 %}badge-warning{% else %}badge-danger{% endif %}">
+                  {{ item.overall_pct }}%
+                </span>
+              </td>
               <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
+                <div class="flex items-center justify-center gap-3">
                   <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS101" value="PRESENT" class="form-check-input" checked>
+                    <input type="radio" name="attendance_{{ item.student.roll_number }}" value="PRESENT" class="form-check-input" {% if item.current_status == 'PRESENT' %}checked{% endif %}>
                     <span class="form-check-label text-success font-semibold">Present</span>
                   </label>
                   <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS101" value="ABSENT" class="form-check-input">
+                    <input type="radio" name="attendance_{{ item.student.roll_number }}" value="ABSENT" class="form-check-input" {% if item.current_status == 'ABSENT' %}checked{% endif %}>
                     <span class="form-check-label text-danger font-semibold">Absent</span>
+                  </label>
+                  <label class="form-check" style="margin: 0;">
+                    <input type="radio" name="attendance_{{ item.student.roll_number }}" value="LATE" class="form-check-input" {% if item.current_status == 'LATE' %}checked{% endif %}>
+                    <span class="form-check-label text-warning font-semibold">Late</span>
+                  </label>
+                  <label class="form-check" style="margin: 0;">
+                    <input type="radio" name="attendance_{{ item.student.roll_number }}" value="EXCUSED" class="form-check-input" {% if item.current_status == 'EXCUSED' %}checked{% endif %}>
+                    <span class="form-check-label text-info font-semibold">Excused</span>
                   </label>
                 </div>
               </td>
-              <td><input type="text" name="remark_2026CS101" class="form-control form-control-sm" placeholder="Optional remark"></td>
-            </tr>
-
-            <tr class="student-row" data-roll-no="2026CS102" data-student-name="Ananya Desai">
-              <td><span class="table-code font-bold">2026CS102</span></td>
               <td>
-                <div class="font-bold">Ananya Desai</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
+                <input type="text" name="remark_{{ item.student.roll_number }}" class="form-control form-control-sm" placeholder="Optional remark" value="{{ item.current_remark }}">
               </td>
-              <td><span class="badge badge-success">94.2% (Safe)</span></td>
-              <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS102" value="PRESENT" class="form-check-input" checked>
-                    <span class="form-check-label text-success font-semibold">Present</span>
-                  </label>
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS102" value="ABSENT" class="form-check-input">
-                    <span class="form-check-label text-danger font-semibold">Absent</span>
-                  </label>
-                </div>
-              </td>
-              <td><input type="text" name="remark_2026CS102" class="form-control form-control-sm" placeholder="Optional remark"></td>
             </tr>
-
-            <tr class="student-row" data-roll-no="2026CS103" data-student-name="Devrat Singh">
-              <td><span class="table-code font-bold">2026CS103</span></td>
-              <td>
-                <div class="font-bold">Devrat Singh</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
-              </td>
-              <td><span class="badge badge-warning">68.5% (Caution)</span></td>
-              <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS103" value="PRESENT" class="form-check-input">
-                    <span class="form-check-label text-success font-semibold">Present</span>
-                  </label>
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS103" value="ABSENT" class="form-check-input" checked>
-                    <span class="form-check-label text-danger font-semibold">Absent</span>
-                  </label>
-                </div>
-              </td>
-              <td><input type="text" name="remark_2026CS103" class="form-control form-control-sm" placeholder="Medical excuse submitted" value="Medical excuse filed"></td>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center p-4 text-muted">No students currently enrolled in this course offering.</td>
             </tr>
-
-            <tr class="student-row" data-roll-no="2026CS104" data-student-name="Ishaan Kapoor">
-              <td><span class="table-code font-bold">2026CS104</span></td>
-              <td>
-                <div class="font-bold">Ishaan Kapoor</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
-              </td>
-              <td><span class="badge badge-danger">59.0% (Detention)</span></td>
-              <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS104" value="PRESENT" class="form-check-input" checked>
-                    <span class="form-check-label text-success font-semibold">Present</span>
-                  </label>
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS104" value="ABSENT" class="form-check-input">
-                    <span class="form-check-label text-danger font-semibold">Absent</span>
-                  </label>
-                </div>
-              </td>
-              <td><input type="text" name="remark_2026CS104" class="form-control form-control-sm" placeholder="Optional remark"></td>
-            </tr>
-
-            <tr class="student-row" data-roll-no="2026CS105" data-student-name="Meera Pillai">
-              <td><span class="table-code font-bold">2026CS105</span></td>
-              <td>
-                <div class="font-bold">Meera Pillai</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
-              </td>
-              <td><span class="badge badge-success">85.0% (Safe)</span></td>
-              <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS105" value="PRESENT" class="form-check-input" checked>
-                    <span class="form-check-label text-success font-semibold">Present</span>
-                  </label>
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS105" value="ABSENT" class="form-check-input">
-                    <span class="form-check-label text-danger font-semibold">Absent</span>
-                  </label>
-                </div>
-              </td>
-              <td><input type="text" name="remark_2026CS105" class="form-control form-control-sm" placeholder="Optional remark"></td>
-            </tr>
-
-            <tr class="student-row" data-roll-no="2026CS106" data-student-name="Rohan Nambiar">
-              <td><span class="table-code font-bold">2026CS106</span></td>
-              <td>
-                <div class="font-bold">Rohan Nambiar</div>
-                <div class="text-xs text-muted">B.Tech CSE • Sem 6</div>
-              </td>
-              <td><span class="badge badge-success">91.3% (Safe)</span></td>
-              <td style="text-align: center;">
-                <div class="flex items-center justify-center gap-4">
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS106" value="PRESENT" class="form-check-input" checked>
-                    <span class="form-check-label text-success font-semibold">Present</span>
-                  </label>
-                  <label class="form-check" style="margin: 0;">
-                    <input type="radio" name="attendance_2026CS106" value="ABSENT" class="form-check-input">
-                    <span class="form-check-label text-danger font-semibold">Absent</span>
-                  </label>
-                </div>
-              </td>
-              <td><input type="text" name="remark_2026CS106" class="form-control form-control-sm" placeholder="Optional remark"></td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
     <div class="card-footer">
       <div class="flex items-center justify-between w-full">
-        <span class="text-xs text-muted">Attendance records are committed with ACID transaction integrity to `attendance_logs`.</span>
-        <button type="submit" class="btn btn-primary btn-lg">
+        <span class="text-xs text-muted">Attendance records are committed with ACID transaction integrity to `academics_attendancerecord`.</span>
+        <button type="submit" class="btn btn-primary btn-lg" {% if not roster_data %}disabled{% endif %}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
           Save &amp; Commit Session Attendance
         </button>
@@ -262,4 +176,3 @@
 {% block extra_js %}
 <script src="{% static 'js/attendance_grid.js' %}"></script>
 {% endblock %}
-

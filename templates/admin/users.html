@@ -28,7 +28,8 @@
     <select id="roleFilterSelect" class="form-select form-select-sm" style="width: auto;">
       <option value="ALL">All Roles</option>
       <option value="STUDENT">Students</option>
-      <option value="TEACHER">Faculty &amp; Instructors</option>
+      <option value="FACULTY">Faculty &amp; Instructors</option>
+      <option value="TEACHER" style="display:none;">Teacher (Legacy)</option>
       <option value="OFFICE">Office Staff</option>
       <option value="ADMIN">System Admins</option>
     </select>
@@ -63,17 +64,17 @@
               <div class="text-xs text-muted">{{ u.email|default:"No email" }} • @{{ u.username }}</div>
             </td>
             <td>
-              <span class="badge {% if u.role == 'ADMIN' %}badge-danger{% elif u.role == 'TEACHER' %}badge-purple{% elif u.role == 'STUDENT' %}badge-info{% else %}badge-warning{% endif %}">
+              <span class="badge {% if u.role == 'ADMIN' %}badge-danger{% elif u.role == 'TEACHER' or u.role == 'FACULTY' %}badge-purple{% elif u.role == 'STUDENT' %}badge-info{% else %}badge-warning{% endif %}">
                 {{ u.get_role_display }}
               </span>
             </td>
             <td>
               {% if u.role == 'STUDENT' and u.student_profile %}
                 <span class="table-code font-bold">{{ u.student_profile.roll_number }}</span>
-              {% elif u.role == 'TEACHER' and u.instructor_profile %}
+              {% elif u.is_faculty and u.instructor_profile %}
                 <span class="table-code font-bold">{{ u.instructor_profile.employee_code }}</span>
-              {% elif u.role == 'OFFICE_STAFF' and u.office_profile %}
-                <span class="table-code font-bold">{{ u.office_profile.employee_code }}</span>
+              {% elif u.role == 'OFFICE_STAFF' and u.staff_profile %}
+                <span class="table-code font-bold">{{ u.staff_profile.employee_code }}</span>
               {% elif u.role == 'ADMIN' and u.admin_profile %}
                 <span class="table-code font-bold">{{ u.admin_profile.employee_code }}</span>
               {% else %}
@@ -83,10 +84,10 @@
             <td>
               {% if u.role == 'STUDENT' and u.student_profile %}
                 {{ u.student_profile.program.name }} (Sem {{ u.student_profile.current_semester }})
-              {% elif u.role == 'TEACHER' and u.instructor_profile %}
+              {% elif u.is_faculty and u.instructor_profile %}
                 {{ u.instructor_profile.department.name }} ({{ u.instructor_profile.get_faculty_category_display }})
-              {% elif u.role == 'OFFICE_STAFF' and u.office_profile %}
-                {{ u.office_profile.get_section_display }}
+              {% elif u.role == 'OFFICE_STAFF' and u.staff_profile %}
+                {{ u.staff_profile.get_section_display }}
               {% elif u.role == 'ADMIN' and u.admin_profile %}
                 {{ u.admin_profile.designation }}
               {% else %}
